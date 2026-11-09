@@ -11,12 +11,20 @@ interface DropZoneUploaderProps {
   ) => void;
   hasExistingText: boolean;
   disabled?: boolean;
+  label?: string;
+  sublabel?: string;
+  buttonText?: string;
+  targetName?: string;
 }
 
 export const DropZoneUploader: React.FC<DropZoneUploaderProps> = ({
   onTextLoaded,
   hasExistingText,
   disabled = false,
+  label = "Drag & drop document or photo",
+  sublabel = "Open-source Tesseract OCR extracts printed text automatically",
+  buttonText = "Browse File or Photo",
+  targetName = "draft",
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
@@ -232,13 +240,13 @@ export const DropZoneUploader: React.FC<DropZoneUploaderProps> = ({
 
           <div>
             <div className="text-ink font-semibold flex items-baseline space-x-2">
-              <span>Drag &amp; drop document or photo</span>
+              <span>{label}</span>
               <span className="text-[10px] text-ink-muted hidden md:inline">
                 (.txt, .md, .png, .jpg, or clipboard paste)
               </span>
             </div>
             <p className="text-[10.5px] text-ink-secondary">
-              Open-source Tesseract OCR extracts printed text automatically
+              {sublabel}
             </p>
           </div>
         </div>
@@ -247,7 +255,7 @@ export const DropZoneUploader: React.FC<DropZoneUploaderProps> = ({
         <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
           {hasExistingText && (
             <span className="text-[10px] text-ink-muted hidden lg:inline">
-              (Replaces draft)
+              (Replaces {targetName})
             </span>
           )}
           <button
@@ -256,7 +264,7 @@ export const DropZoneUploader: React.FC<DropZoneUploaderProps> = ({
             disabled={disabled || isProcessingOcr}
             className="px-3 py-1.5 bg-paper-surface border border-ink-rule hover:border-ink text-ink text-[11px] font-semibold rounded-[2px] transition-colors disabled:opacity-40"
           >
-            {isProcessingOcr ? "Processing..." : "Browse File or Photo"}
+            {isProcessingOcr ? "Processing..." : buttonText}
           </button>
         </div>
       </div>

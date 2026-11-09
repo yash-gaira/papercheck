@@ -75,6 +75,24 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
     }
   };
 
+  const handleAnswerKeyLoaded = (text: string, mode: "replace" | "append") => {
+    if (mode === "append" && rawAnswerKeyText.trim()) {
+      onAnswerKeyTextChange(`${rawAnswerKeyText.trim()}\n${text.trim()}`);
+    } else {
+      onAnswerKeyTextChange(text.trim());
+    }
+  };
+
+  const handleDropOnAnswerKeyTextarea = (
+    e: React.DragEvent<HTMLTextAreaElement>
+  ) => {
+    const textData = e.dataTransfer.getData("text/plain");
+    if (textData && textData.trim()) {
+      e.preventDefault();
+      handleAnswerKeyLoaded(textData, "append");
+    }
+  };
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     if (!metadata.title.trim()) {
@@ -485,9 +503,9 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
             </div>
           </div>
 
-          {/* Standalone Answer Key Textarea */}
-          <div>
-            <div className="flex justify-between items-baseline mb-2">
+          {/* Standalone Answer Key Textarea & Drag & Drop Box */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline">
               <label className="font-mono text-[10px] uppercase tracking-wider text-ink-secondary">
                 Separate Answer Key <span className="text-ink-muted">(Optional)</span>
               </label>
@@ -495,12 +513,25 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
                 Leave blank if answers are provided inline
               </span>
             </div>
+
+            {/* Answer Key Drag & Drop Box */}
+            <DropZoneUploader
+              onTextLoaded={handleAnswerKeyLoaded}
+              hasExistingText={Boolean(rawAnswerKeyText.trim())}
+              disabled={isAIStructuring}
+              label="Drag & drop answer key document or photo"
+              sublabel="Extracts numerical and MCQ answer keys (e.g. 1. A, 2. 26 cm) using Tesseract OCR"
+              buttonText="Browse Answer Key"
+              targetName="key"
+            />
+
             <div className="border border-ink-rule rounded-[2px] overflow-hidden">
               <textarea
                 rows={4}
                 value={rawAnswerKeyText}
                 onChange={(e) => onAnswerKeyTextChange(e.target.value)}
-                placeholder="1. 1&#10;2. A&#10;3. 26 cm"
+                onDrop={handleDropOnAnswerKeyTextarea}
+                placeholder="1. 1&#10;2. A&#10;3. 26 cm&#10;(Or drag & drop an answer key file or photo above)"
                 className="w-full p-3.5 lined-paper font-mono text-xs text-ink placeholder:text-ink-muted/50 focus:outline-none focus:bg-paper-surface"
               />
             </div>
