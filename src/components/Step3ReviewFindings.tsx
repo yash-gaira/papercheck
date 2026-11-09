@@ -208,9 +208,19 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
             </span>
           </div>
         ) : aiErrorMessage ? (
-          <div className="mt-4 p-3 bg-redpen-faint border border-redpen-border rounded-[2px] text-xs font-mono text-redpen">
-            <span className="font-bold block">[BharatCode Review Notice]</span>
-            <span>{aiErrorMessage}</span>
+          <div className="mt-4 p-3 bg-redpen-faint border border-redpen-border rounded-[2px] text-xs font-mono text-redpen flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span className="font-bold block">[BharatCode Review Notice]</span>
+              <span>{aiErrorMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={onRecheck}
+              disabled={aiLoading}
+              className="px-2.5 py-1 bg-paper-surface border border-redpen-border hover:border-redpen text-redpen text-[11px] font-semibold rounded-[2px] self-start sm:self-auto flex-shrink-0 transition-colors"
+            >
+              {aiLoading ? "Rechecking..." : "Retry Review"}
+            </button>
           </div>
         ) : null}
 

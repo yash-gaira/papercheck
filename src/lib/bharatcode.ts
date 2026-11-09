@@ -19,6 +19,94 @@ const DEFAULT_BASE_URL = "https://bharatcode.ai/api/model/v1";
 const REQUEST_TIMEOUT_MS = 25000;
 
 /**
+ * Extracts and normalizes JSON from arbitrary LLM responses,
+ * handling markdown code fences, preambles, trailing commas, and reasoning tags.
+ */
+export function extractJsonFromModelResponse(rawContent: string): unknown {
+  if (!rawContent || typeof rawContent !== "string") {
+    return { findings: [] };
+  }
+
+  // 1. Remove thinking / chain-of-thought tags (e.g. <think>...</think>)
+  const text = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+  // Helper to normalize the parsed object into { findings: [...] }
+  function normalizeParsed(obj: unknown): unknown {
+    if (Array.isArray(obj)) {
+      return { findings: obj };
+    }
+    if (obj && typeof obj === "object") {
+      const record = obj as Record<string, unknown>;
+      if (Array.isArray(record.findings)) return record;
+      if (Array.isArray(record.review)) return { ...record, findings: record.review };
+      if (Array.isArray(record.issues)) return { ...record, findings: record.issues };
+      if (Array.isArray(record.errors)) return { ...record, findings: record.errors };
+      return { ...record, findings: [] };
+    }
+    return { findings: [] };
+  }
+
+  // Helper to parse with trailing comma sanitization
+  function tryParse(str: string): unknown | null {
+    try {
+      return JSON.parse(str);
+    } catch {
+      try {
+        const sanitized = str.replace(/,\s*([\]}])/g, "$1");
+        return JSON.parse(sanitized);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  // 2. Direct parse attempt
+  const direct = tryParse(text);
+  if (direct) return normalizeParsed(direct);
+
+  // 3. Extract from markdown code fences (```json ... ``` or ``` ... ```) anywhere in text
+  const fenceRegex = /```(?:json)?\s*([\s\S]*?)\s*```/gi;
+  let match: RegExpExecArray | null;
+  while ((match = fenceRegex.exec(text)) !== null) {
+    if (match[1]) {
+      const parsed = tryParse(match[1].trim());
+      if (parsed) return normalizeParsed(parsed);
+    }
+  }
+
+  // 4. Extract from outermost curly braces { ... }
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = text.slice(firstBrace, lastBrace + 1);
+    const parsed = tryParse(candidate);
+    if (parsed) return normalizeParsed(parsed);
+  }
+
+  // 5. Extract from outermost square brackets [ ... ]
+  const firstBracket = text.indexOf("[");
+  const lastBracket = text.lastIndexOf("]");
+  if (firstBracket !== -1 && lastBracket > firstBracket) {
+    const candidate = text.slice(firstBracket, lastBracket + 1);
+    const parsed = tryParse(candidate);
+    if (parsed) return normalizeParsed(parsed);
+  }
+
+  // 6. Check if the model answered with natural language indicating no errors
+  const cleanPatterns = [
+    /no\s+(?:errors|mistakes|issues|ambiguities)\s+(?:found|detected|observed)/i,
+    /all\s+questions\s+(?:are\s+)?(?:correct|valid|accurate)/i,
+    /paper\s+is\s+(?:clean|correct|well-structured)/i,
+    /no\s+genuine\s+issues/i,
+  ];
+  if (cleanPatterns.some((pattern) => pattern.test(text))) {
+    return { findings: [], summary: "BharatCode verified: no genuine issues found." };
+  }
+
+  throw new Error("Failed to parse structured JSON from BharatCode response.");
+}
+
+/**
  * Reviews a paper's questions using BharatCode OpenAI-compatible API.
  * This runs solely server-side.
  */
@@ -248,15 +336,9 @@ Check each question carefully for mathematical correctness, MCQ single-answer va
       };
     }
 
-    // Strip markdown JSON code fence if present
-    const cleanJson = rawContent
-      .replace(/^\s*```(?:json)?\s*/i, "")
-      .replace(/\s*```\s*$/i, "")
-      .trim();
-
     let parsedJson: unknown;
     try {
-      parsedJson = JSON.parse(cleanJson);
+      parsedJson = extractJsonFromModelResponse(rawContent);
     } catch {
       return {
         success: false,
@@ -282,6 +364,16 @@ Check each question carefully for mathematical correctness, MCQ single-answer va
     for (const item of validationResult.data.findings) {
       if (!validQuestionIds.has(item.questionId)) {
         // Discard hallucinated question ID
+        continue;
+      }
+
+      // If model self-corrected in explanation (e.g. "Wait, this is actually correct... No error here"), do not flag
+      const explanationLower = (item.explanation || "").toLowerCase();
+      if (
+        explanationLower.includes("no error here") ||
+        explanationLower.includes("actually correct") ||
+        explanationLower.includes("no issue here")
+      ) {
         continue;
       }
 

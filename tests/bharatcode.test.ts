@@ -126,6 +126,108 @@ describe("BharatCode Integration", () => {
     expect(result.findings[0].proposedCorrection?.newValue).toBe("9");
   });
 
+  it("successfully parses JSON wrapped in markdown code fence and conversational text", async () => {
+    process.env.BHARATCODE_API_KEY = "dummy-key-test";
+
+    const aiOutput = `Here is my assessment of the question paper:
+\`\`\`json
+{
+  "findings": [
+    {
+      "questionId": "q-test-1",
+      "severity": "note",
+      "title": "Question formatting",
+      "relevantText": "Which of these is a prime number?",
+      "explanation": "Valid question structure.",
+      "proposedCorrection": null
+    }
+  ]
+}
+\`\`\`
+I hope this audit is helpful for the teacher.`;
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [
+          {
+            finish_reason: "stop",
+            message: { content: aiOutput },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await performBharatCodeReview(sampleQuestions, sampleMetadata);
+
+    expect(result.success).toBe(true);
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0].questionId).toBe("q-test-1");
+  });
+
+  it("handles reasoning <think> tags and trailing commas without throwing", async () => {
+    process.env.BHARATCODE_API_KEY = "dummy-key-test";
+
+    const aiOutput = `<think>
+Let's check question 1. The question is valid.
+</think>
+{
+  "findings": [
+    {
+      "questionId": "q-test-1",
+      "severity": "note",
+      "title": "Minor phrasing",
+      "relevantText": "prime number",
+      "explanation": "Consider adding instructions.",
+      "proposedCorrection": null,
+    },
+  ],
+}`;
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [
+          {
+            finish_reason: "stop",
+            message: { content: aiOutput },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await performBharatCodeReview(sampleQuestions, sampleMetadata);
+
+    expect(result.success).toBe(true);
+    expect(result.findings).toHaveLength(1);
+  });
+
+  it("gracefully parses natural language confirmation when paper has zero errors", async () => {
+    process.env.BHARATCODE_API_KEY = "dummy-key-test";
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [
+          {
+            finish_reason: "stop",
+            message: {
+              content: "I have audited all questions. All questions are correct and no errors were detected in the question paper.",
+            },
+          },
+        ],
+      }),
+    } as any);
+
+    const result = await performBharatCodeReview(sampleQuestions, sampleMetadata);
+
+    expect(result.success).toBe(true);
+    expect(result.findings).toHaveLength(0);
+  });
+
   it("handles malformed JSON response safely", async () => {
     process.env.BHARATCODE_API_KEY = "dummy-key-test";
 
@@ -137,7 +239,7 @@ describe("BharatCode Integration", () => {
           {
             finish_reason: "stop",
             message: {
-              content: "This is not json at all! Something went wrong on the server.",
+              content: "Unexpected 500 error from gateway. { incomplete invalid string...",
             },
           },
         ],

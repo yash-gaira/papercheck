@@ -172,22 +172,34 @@ export type PaperDraft = z.infer<typeof PaperDraftSchema>;
 // AI Review Schemas
 export const AIFindingItemSchema = z.object({
   questionId: z.string(),
-  severity: z.enum(["error", "warning", "note"]),
-  title: z.string().min(1).max(120),
-  relevantText: z.string(),
-  explanation: z.string().min(1),
+  severity: z.preprocess(
+    (v) => (typeof v === "string" ? v.toLowerCase() : v),
+    z.enum(["error", "warning", "note"]).catch("note")
+  ),
+  title: z
+    .string()
+    .min(1)
+    .catch("Review Finding")
+    .transform((t) => t.slice(0, 150)),
+  relevantText: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v || ""),
+  explanation: z.string().min(1).catch("No detailed explanation provided."),
   proposedCorrection: z
     .object({
-      field: z.enum(["text", "marks", "optionText", "answerKey"]),
+      field: z.enum(["text", "marks", "optionText", "answerKey"]).catch("text"),
       targetOptionLabel: z.string().optional(),
       newValue: z.union([z.string(), z.number()]),
-      label: z.string(),
+      label: z.string().catch("Apply Correction"),
     })
+    .nullable()
     .optional(),
 });
 
 export const AIReviewResponseSchema = z.object({
-  findings: z.array(AIFindingItemSchema),
+  findings: z.array(AIFindingItemSchema).default([]),
   summary: z.string().optional(),
 });
 
