@@ -321,22 +321,19 @@ export default function Home() {
       {/* Top Header */}
       <Header aiConfigured={aiConfigured} modelName={modelName} />
 
-      {/* Hero Section with Editorial Typography & Tactile 3D Paper */}
+      {/* Functional Workspace Header */}
       <section className="no-print border-b border-ink-rule bg-paper-surface">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 sm:py-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div className="md:col-span-8 space-y-3">
-            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-ink-secondary block">
-              Pre-Print Assessment Audit &bull; CBSE / State Syllabus
-            </span>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-ink leading-[1.12]">
-              Catch question-paper mistakes before students do.
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
+          <div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+              Check a Question Paper
             </h1>
-            <p className="font-sans text-xs sm:text-sm text-ink-secondary max-w-xl leading-relaxed">
-              Verify marks arithmetic, duplicate wording, single-answer MCQ integrity, scientific units, and question ambiguity across Classes 6–12 Mathematics &amp; Science papers.
+            <p className="font-sans text-xs sm:text-sm text-ink-secondary mt-1 max-w-xl">
+              Paste or upload an exam paper to verify marks arithmetic, single-answer MCQs, scientific units, and question clarity.
             </p>
           </div>
 
-          <div className="md:col-span-4 flex justify-center md:justify-end">
+          <div className="hidden sm:block flex-shrink-0 ml-4">
             <InteractivePaperCanvas
               step={step}
               findingCount={checkReport.findings.filter((f) => !f.dismissed).length}
@@ -416,10 +413,10 @@ export default function Home() {
         )}
       </main>
 
-      {/* Quiet, Single-Line Editorial Footer */}
-      <footer className="no-print mt-auto py-5 border-t border-ink-rule text-center font-mono text-[11px] text-ink-secondary bg-paper-surface">
+      {/* Minimal Utility Footer */}
+      <footer className="no-print mt-auto py-4 border-t border-ink-rule text-center font-mono text-[11px] text-ink-secondary">
         <p>
-          Prayaas PaperCheck &bull; Built for BharatCode Build League &bull; Classes 6–12 Mathematics &amp; Science &bull; In-memory draft security
+          PaperCheck &bull; School Question Paper Quality Assurance &bull; In-memory execution
         </p>
       </footer>
     </div>

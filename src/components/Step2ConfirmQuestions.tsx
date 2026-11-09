@@ -78,17 +78,17 @@ export const Step2ConfirmQuestions: React.FC<Step2ConfirmQuestionsProps> = ({
         {/* Header Strip */}
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between pb-5 border-b border-ink-rule gap-3">
           <div>
-            <div className="flex items-baseline space-x-3">
-              <span className="font-mono text-[10px] tracking-widest uppercase text-ink-secondary">
-                Section 02 / Verification
-              </span>
+            <div className="flex items-baseline space-x-2">
+              <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight">
+                Confirm Extracted Questions
+              </h2>
               <span className="font-mono text-xs text-ink-secondary">
-                [{questions.length} of 20 Qs]
+                ({questions.length}/20)
               </span>
             </div>
-            <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight mt-0.5">
-              Confirm Extracted Questions
-            </h2>
+            <p className="font-sans text-xs text-ink-secondary mt-0.5">
+              Review and adjust question statements, marks, options, and answers before running checks.
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

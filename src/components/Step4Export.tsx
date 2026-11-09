@@ -87,12 +87,12 @@ export const Step4Export: React.FC<Step4ExportProps> = ({
       <div className="no-print bg-paper-surface border border-ink-rule rounded-[3px] p-6 shadow-sheet">
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between pb-5 border-b border-ink-rule gap-3">
           <div>
-            <span className="font-mono text-[10px] tracking-widest uppercase text-ink-secondary">
-              Section 04 / Dispatch
-            </span>
-            <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight mt-0.5">
-              Printable Exam Paper &amp; Deliverables
+            <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight">
+              Export &amp; Print
             </h2>
+            <p className="font-sans text-xs text-ink-secondary mt-0.5">
+              Printable student question paper, teacher answer key, and audit report.
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

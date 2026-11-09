@@ -100,19 +100,19 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
         {/* Header Strip */}
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between pb-5 border-b border-ink-rule gap-3">
           <div>
-            <div className="flex items-baseline space-x-3">
-              <span className="font-mono text-[10px] tracking-widest uppercase text-ink-secondary">
-                Section 03 / Audit
-              </span>
+            <div className="flex items-center space-x-3">
+              <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight">
+                Review Findings
+              </h2>
               {checkReport.isStale && (
                 <span className="font-mono text-[10px] uppercase font-bold text-redpen bg-redpen-faint px-2 py-0.5 border border-redpen-border rounded-[2px]">
                   [Outdated &mdash; Edits Applied]
                 </span>
               )}
             </div>
-            <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight mt-0.5">
-              Teacher Review &amp; Annotations
-            </h2>
+            <p className="font-sans text-xs text-ink-secondary mt-0.5">
+              Review arithmetic checks, potential duplicate questions, and curriculum warnings.
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

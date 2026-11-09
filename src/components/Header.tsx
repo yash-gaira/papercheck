@@ -13,32 +13,32 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
 
   return (
     <header className="no-print bg-paper-surface border-b border-ink-rule sticky top-0 z-40">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        {/* Wordmark */}
-        <div className="flex items-baseline space-x-2.5">
-          <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-ink font-semibold">
-            PRAYAAS
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 h-13 py-3 flex items-center justify-between">
+        {/* Clean, Intentional Wordmark */}
+        <div className="flex items-center space-x-2">
+          <span className="font-serif text-lg tracking-tight text-ink font-semibold">
+            Prayaas PaperCheck
           </span>
-          <span className="text-ink-muted text-xs font-light">/</span>
-          <span className="font-serif italic text-base tracking-tight text-ink font-medium">
-            PaperCheck
-          </span>
-          <span className="hidden sm:inline-block text-[10px] uppercase font-mono tracking-wider text-ink-secondary pl-2 border-l border-ink-rule">
-            Classes 6–12 &bull; Maths &amp; Science
+          <span className="hidden sm:inline-block text-[11px] font-mono text-ink-muted">
+            v1.2
           </span>
         </div>
 
-        {/* Quiet status chip, theme toggle & info trigger */}
+        {/* Minimal Navigation & Theme Toggle */}
         <div className="flex items-center space-x-3 text-xs">
-          {aiConfigured ? (
-            <div className="hidden xs:flex items-center space-x-2 font-mono text-[11px] text-pencil-green bg-pencil-faint border border-pencil-border px-2.5 py-1 rounded-[3px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-pencil-green inline-block" />
-              <span>BharatCode active ({modelName || "qwen-3.8-27b"})</span>
-            </div>
-          ) : (
-            <div className="hidden xs:flex items-center space-x-2 font-mono text-[11px] text-ink-secondary bg-paper-bg border border-ink-rule px-2.5 py-1 rounded-[3px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-ink-muted inline-block" />
-              <span>Deterministic Mode (AI Key Not Set)</span>
+          {/* Development Status Badge - Only shown in development mode */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="hidden sm:flex items-center space-x-1.5 font-mono text-[10.5px] text-ink-secondary px-2 py-0.5 border border-ink-rule rounded-[2px]">
+              <span
+                className={`w-1.5 h-1.5 rounded-full inline-block ${
+                  aiConfigured ? "bg-pencil-green" : "bg-ink-muted"
+                }`}
+              />
+              <span>
+                {aiConfigured
+                  ? `AI: ${modelName || "active"}`
+                  : "Dev: Deterministic"}
+              </span>
             </div>
           )}
 
@@ -48,9 +48,9 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
           <button
             onClick={() => setShowInfo(true)}
             aria-label="Product Information and Guidelines"
-            className="font-mono text-[11px] text-ink-secondary hover:text-ink px-2 py-1 border border-ink-rule hover:border-ink rounded-[2px] transition-colors"
+            className="font-mono text-[11px] text-ink-secondary hover:text-ink px-2.5 py-1 border border-ink-rule hover:border-ink rounded-[2px] transition-colors"
           >
-            [Notes]
+            Guidelines
           </button>
         </div>
       </div>
