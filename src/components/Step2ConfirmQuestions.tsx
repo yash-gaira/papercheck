@@ -201,87 +201,124 @@ export const Step2ConfirmQuestions: React.FC<Step2ConfirmQuestionsProps> = ({
         ) : (
           /* Printed Exam Sheet Rows */
           <div className="mt-6 divide-y divide-ink-rule border-y border-ink-rule">
-            {questions.map((q) => {
+            {questions.map((q, idx) => {
               const hasMarks = q.marks !== null && Number.isInteger(q.marks) && q.marks > 0;
+              const prevQ = idx > 0 ? questions[idx - 1] : null;
+              const showSectionHeader = q.section && (!prevQ || prevQ.section !== q.section);
+
               return (
-                <div
-                  key={q.id}
-                  className="py-4 px-2 hover:bg-paper-bg/60 transition-colors flex flex-col md:flex-row md:items-start justify-between gap-4"
-                >
-                  {/* Left: Number + statement + options */}
-                  <div className="flex items-start space-x-3 flex-1">
-                    <span className="font-mono text-xs font-bold text-ink min-w-[28px] pt-0.5">
-                      Q{q.number}.
-                    </span>
+                <React.Fragment key={q.id}>
+                  {showSectionHeader && (
+                    <div className="py-2 px-3 bg-paper-bg border-b border-ink-rule">
+                      <span className="font-mono text-xs uppercase tracking-wider font-bold text-ink">
+                        {q.section}
+                      </span>
+                    </div>
+                  )}
+                  <div
+                    className="py-4 px-2 hover:bg-paper-bg/60 transition-colors flex flex-col md:flex-row md:items-start justify-between gap-4"
+                  >
+                    {/* Left: Number + statement + options */}
+                    <div className="flex items-start space-x-3 flex-1">
+                      <span className="font-mono text-xs font-bold text-ink min-w-[28px] pt-0.5">
+                        Q{q.number}.
+                      </span>
 
-                    <div className="flex-1 space-y-2">
-                      <p className="font-serif text-base text-ink leading-snug">
-                        {q.text || <span className="italic text-redpen">Empty statement</span>}
-                      </p>
+                      <div className="flex-1 space-y-2">
+                        <p className="font-serif text-base text-ink leading-snug">
+                          {q.text || <span className="italic text-redpen">Empty statement</span>}
+                        </p>
 
-                      {/* MCQ Options display */}
-                      {q.type === "mcq" && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs text-ink-secondary">
-                          {q.options.map((opt) => (
-                            <div
-                              key={opt.label}
-                              className={`p-1.5 border rounded-[2px] flex items-center space-x-1.5 ${
-                                q.answerKey &&
-                                q.answerKey.trim().toUpperCase() === opt.label.toUpperCase()
-                                  ? "border-pencil-green bg-pencil-faint text-pencil-green font-semibold"
-                                  : "border-ink-faint bg-paper-surface"
-                              }`}
-                            >
-                              <span className="font-bold">({opt.label})</span>
-                              <span className="truncate">{opt.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Question meta badges */}
-                      <div className="flex items-center space-x-3 font-mono text-[10px] text-ink-muted pt-1">
-                        <span className="uppercase">
-                          Type: {q.type === "mcq" ? "MCQ" : "Short Answer"}
-                        </span>
-                        {q.answerKey && (
-                          <span className="text-pencil-green font-semibold">
-                            Key: {q.answerKey}
-                          </span>
+                        {/* Sub-parts for case-based / senior questions */}
+                        {q.subParts && q.subParts.length > 0 && (
+                          <div className="pl-3 border-l-2 border-ink-rule/80 space-y-1.5 my-2 font-serif text-sm text-ink">
+                            {q.subParts.map((sp, sIdx) => (
+                              <div key={sIdx} className="flex justify-between items-baseline gap-2">
+                                <div>
+                                  <span className="font-mono font-bold text-xs mr-1.5 text-ink-secondary">
+                                    {sp.label}
+                                  </span>
+                                  <span>{sp.text}</span>
+                                </div>
+                                {sp.marks !== null && sp.marks !== undefined && (
+                                  <span className="font-mono text-xs text-ink-muted flex-shrink-0">
+                                    [{sp.marks} mark{sp.marks > 1 ? "s" : ""}]
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         )}
+
+                        {/* MCQ Options display */}
+                        {q.type === "mcq" && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs text-ink-secondary">
+                            {q.options.map((opt) => (
+                              <div
+                                key={opt.label}
+                                className={`p-1.5 border rounded-[2px] flex items-center space-x-1.5 ${
+                                  q.answerKey &&
+                                  q.answerKey.trim().toUpperCase() === opt.label.toUpperCase()
+                                    ? "border-pencil-green bg-pencil-faint text-pencil-green font-semibold"
+                                    : "border-ink-faint bg-paper-surface"
+                                }`}
+                              >
+                                <span className="font-bold">({opt.label})</span>
+                                <span className="truncate">{opt.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Question meta badges */}
+                        <div className="flex items-center space-x-3 font-mono text-[10px] text-ink-muted pt-1">
+                          <span className="uppercase">
+                            Type: {q.type === "mcq" ? "MCQ" : "Short Answer"}
+                          </span>
+                          {q.answerKey && (
+                            <span className="text-pencil-green font-semibold">
+                              Key: {q.answerKey}
+                            </span>
+                          )}
+                          {q.section && (
+                            <span className="text-ink-secondary">
+                              Section: {q.section}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Marks in brackets + actions */}
+                    <div className="flex items-center md:flex-col md:items-end justify-between md:justify-start gap-2 pt-1 pl-9 md:pl-0 flex-shrink-0">
+                      <span
+                        className={`font-mono text-xs font-bold ${
+                          hasMarks ? "text-ink" : "text-redpen"
+                        }`}
+                      >
+                        [{hasMarks ? `${q.marks} mark${q.marks! > 1 ? "s" : ""}` : "Missing marks"}]
+                      </span>
+
+                      <div className="flex items-center space-x-2 font-mono text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => handleEditClick(q)}
+                          className="text-ink-secondary hover:text-ink hover:underline"
+                        >
+                          [edit]
+                        </button>
+                        <span className="text-ink-muted">&bull;</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(q.id)}
+                          className="text-ink-secondary hover:text-redpen hover:underline"
+                        >
+                          [remove]
+                        </button>
                       </div>
                     </div>
                   </div>
-
-                  {/* Right: Marks in brackets + actions */}
-                  <div className="flex items-center md:flex-col md:items-end justify-between md:justify-start gap-2 pt-1 pl-9 md:pl-0 flex-shrink-0">
-                    <span
-                      className={`font-mono text-xs font-bold ${
-                        hasMarks ? "text-ink" : "text-redpen"
-                      }`}
-                    >
-                      [{hasMarks ? `${q.marks} mark${q.marks! > 1 ? "s" : ""}` : "Missing marks"}]
-                    </span>
-
-                    <div className="flex items-center space-x-2 font-mono text-[11px]">
-                      <button
-                        type="button"
-                        onClick={() => handleEditClick(q)}
-                        className="text-ink-secondary hover:text-ink hover:underline"
-                      >
-                        [edit]
-                      </button>
-                      <span className="text-ink-muted">&bull;</span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteClick(q.id)}
-                        className="text-ink-secondary hover:text-redpen hover:underline"
-                      >
-                        [remove]
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                </React.Fragment>
               );
             })}
           </div>

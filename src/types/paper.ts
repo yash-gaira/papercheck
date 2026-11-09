@@ -1,14 +1,46 @@
 import { z } from "zod";
 
-export type ClassGrade = "Class 6" | "Class 7" | "Class 8";
+export type ClassGrade =
+  | "Class 6"
+  | "Class 7"
+  | "Class 8"
+  | "Class 9"
+  | "Class 10"
+  | "Class 11"
+  | "Class 12";
 
-export const ClassGradeValues: ClassGrade[] = ["Class 6", "Class 7", "Class 8"];
+export const ClassGradeValues: ClassGrade[] = [
+  "Class 6",
+  "Class 7",
+  "Class 8",
+  "Class 9",
+  "Class 10",
+  "Class 11",
+  "Class 12",
+];
+
+export type Subject = "Mathematics" | "Science";
+export const SubjectValues: Subject[] = ["Mathematics", "Science"];
+
+export type ScienceSubSubject = "Physics" | "Chemistry" | "Biology";
+export const ScienceSubSubjectValues: ScienceSubSubject[] = [
+  "Physics",
+  "Chemistry",
+  "Biology",
+];
 
 export type QuestionType = "mcq" | "short_answer";
 
 export interface QuestionOption {
   label: string; // e.g. "A", "B", "C", "D"
   text: string;
+}
+
+export interface QuestionSubPart {
+  label: string; // e.g. "(a)", "(b)", "(i)", "(ii)"
+  text: string;
+  marks?: number | null;
+  answerKey?: string;
 }
 
 export interface Question {
@@ -18,14 +50,17 @@ export interface Question {
   type: QuestionType;
   marks: number | null; // positive integer, or null if missing/unparsed
   options: QuestionOption[]; // empty for short_answer
-  answerKey?: string; // e.g. "A" or "1"
+  answerKey?: string; // e.g. "A" or "1" or "25 m/s"
   rawText?: string;
+  subParts?: QuestionSubPart[]; // additive for senior case-based / sub-part questions
+  section?: string; // e.g. "Section A"
 }
 
 export interface PaperMetadata {
   title: string;
   classGrade: ClassGrade;
-  subject: "Mathematics";
+  subject: Subject;
+  subSubject?: ScienceSubSubject;
   expectedTotalMarks: number;
   timeAllowedMinutes?: number;
   instructions?: string[];
@@ -46,7 +81,7 @@ export interface ProposedCorrection {
   targetOptionLabel?: string;
   originalValue?: string | number;
   newValue: string | number;
-  label: string; // Human readable description e.g. "Change option C to 5" or "Rewrite question"
+  label: string; // Human readable description
 }
 
 export interface Finding {
@@ -59,7 +94,7 @@ export interface Finding {
   relevantText: string;
   explanation: string;
   proposedCorrection?: ProposedCorrection;
-  needsTeacherReview: boolean; // always true for AI
+  needsTeacherReview: boolean;
   dismissed?: boolean;
   dismissedNote?: string;
 }
@@ -82,6 +117,13 @@ export const QuestionOptionSchema = z.object({
   text: z.string().min(1),
 });
 
+export const QuestionSubPartSchema = z.object({
+  label: z.string().min(1).max(10),
+  text: z.string().min(1),
+  marks: z.number().int().positive().nullable().optional(),
+  answerKey: z.string().optional(),
+});
+
 export const QuestionSchema = z.object({
   id: z.string().min(1),
   number: z.number().int().positive(),
@@ -91,13 +133,28 @@ export const QuestionSchema = z.object({
   options: z.array(QuestionOptionSchema),
   answerKey: z.string().optional(),
   rawText: z.string().optional(),
+  subParts: z.array(QuestionSubPartSchema).optional(),
+  section: z.string().optional(),
 });
 
 export const PaperMetadataSchema = z.object({
   title: z.string().min(1, "Paper title is required").max(150),
-  classGrade: z.enum(["Class 6", "Class 7", "Class 8"]),
-  subject: z.literal("Mathematics"),
-  expectedTotalMarks: z.number().int().positive("Expected marks must be a positive integer").max(100),
+  classGrade: z.enum([
+    "Class 6",
+    "Class 7",
+    "Class 8",
+    "Class 9",
+    "Class 10",
+    "Class 11",
+    "Class 12",
+  ]),
+  subject: z.enum(["Mathematics", "Science"]),
+  subSubject: z.enum(["Physics", "Chemistry", "Biology"]).optional(),
+  expectedTotalMarks: z
+    .number()
+    .int()
+    .positive("Expected marks must be a positive integer")
+    .max(100),
   timeAllowedMinutes: z.number().int().positive().max(300).optional(),
   instructions: z.array(z.string()).optional(),
 });
@@ -136,4 +193,3 @@ export const AIReviewResponseSchema = z.object({
 
 export type AIFindingItem = z.infer<typeof AIFindingItemSchema>;
 export type AIReviewResponse = z.infer<typeof AIReviewResponseSchema>;
-

@@ -4,19 +4,112 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #F6F3EC;
-  --foreground: #1A1A18;
+/* Theme Variable Definitions */
+:root,
+[data-theme="paper"] {
+  --paper-bg: #F6F3EC;
   --paper-surface: #FBFAF6;
+  --paper-ruled: #EAE5D9;
+  --ink: #1A1A18;
   --ink-secondary: #5C5A54;
+  --ink-muted: #8C897E;
   --ink-rule: #D9D4C7;
-  --red-pen: #C8372D;
+  --ink-faint: #EBE7DC;
+  --redpen: #C8372D;
+  --redpen-dark: #A62B22;
+  --redpen-faint: #FDF2F0;
+  --redpen-border: #F3C5C1;
   --pencil-green: #3F6B4E;
+  --pencil-faint: #F2F7F4;
+  --pencil-border: #C8DCCF;
+}
+
+[data-theme="ink"] {
+  --paper-bg: #141413;
+  --paper-surface: #1C1C1A;
+  --paper-ruled: #2A2A26;
+  --ink: #FBFAF6;
+  --ink-secondary: #A8A59B;
+  --ink-muted: #737067;
+  --ink-rule: #2E2E2A;
+  --ink-faint: #242421;
+  --redpen: #E05347;
+  --redpen-dark: #FF6B5E;
+  --redpen-faint: #261614;
+  --redpen-border: #522320;
+  --pencil-green: #5A9E6F;
+  --pencil-faint: #142118;
+  --pencil-border: #233B2B;
+}
+
+[data-theme="contrast"] {
+  --paper-bg: #FFFFFF;
+  --paper-surface: #FFFFFF;
+  --paper-ruled: #000000;
+  --ink: #000000;
+  --ink-secondary: #111111;
+  --ink-muted: #222222;
+  --ink-rule: #000000;
+  --ink-faint: #DDDDDD;
+  --redpen: #B30000;
+  --redpen-dark: #8A0000;
+  --redpen-faint: #FFF0F0;
+  --redpen-border: #B30000;
+  --pencil-green: #006622;
+  --pencil-faint: #F0FFF0;
+  --pencil-border: #006622;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --paper-bg: #141413;
+    --paper-surface: #1C1C1A;
+    --paper-ruled: #2A2A26;
+    --ink: #FBFAF6;
+    --ink-secondary: #A8A59B;
+    --ink-muted: #737067;
+    --ink-rule: #2E2E2A;
+    --ink-faint: #242421;
+    --redpen: #E05347;
+    --redpen-dark: #FF6B5E;
+    --redpen-faint: #261614;
+    --redpen-border: #522320;
+    --pencil-green: #5A9E6F;
+    --pencil-faint: #142118;
+    --pencil-border: #233B2B;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --paper-bg: #F6F3EC;
+    --paper-surface: #FBFAF6;
+    --paper-ruled: #EAE5D9;
+    --ink: #1A1A18;
+    --ink-secondary: #5C5A54;
+    --ink-muted: #8C897E;
+    --ink-rule: #D9D4C7;
+    --ink-faint: #EBE7DC;
+    --redpen: #C8372D;
+    --redpen-dark: #A62B22;
+    --redpen-faint: #FDF2F0;
+    --redpen-border: #F3C5C1;
+    --pencil-green: #3F6B4E;
+    --pencil-faint: #F2F7F4;
+    --pencil-border: #C8DCCF;
+  }
+}
+
+/* 150ms smooth transition for theme color switching (disabled for prefers-reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+  body, header, nav, button, input, select, textarea, div, svg {
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
 }
 
 body {
-  color: var(--foreground);
-  background-color: var(--background);
+  color: var(--ink);
+  background-color: var(--paper-bg);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
@@ -25,8 +118,8 @@ body {
 
 /* Lined exam paper texture for textareas */
 .lined-paper {
-  background-color: #FBFAF6;
-  background-image: linear-gradient(transparent 23px, #EBE7DC 24px);
+  background-color: var(--paper-surface);
+  background-image: linear-gradient(transparent 23px, var(--ink-faint) 24px);
   background-size: 100% 24px;
   line-height: 24px;
 }
@@ -38,7 +131,7 @@ body {
 }
 .focus-pen:focus {
   outline: none;
-  border-color: var(--red-pen) !important;
+  border-color: var(--redpen) !important;
 }
 
 /* Custom scrollbars - quiet and pencil-like */
@@ -47,14 +140,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F6F3EC;
+  background: var(--paper-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #D9D4C7;
+  background: var(--ink-rule);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8C897E;
+  background: var(--ink-muted);
 }
 
 /* Step transition cross-fade with 4px slide */
@@ -92,6 +185,15 @@ body {
 /* Ruled margin line */
 .ruled-margin {
   border-left: 1px solid var(--ink-rule);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Print Styles for Clean A4 Paper Export */

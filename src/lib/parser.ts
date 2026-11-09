@@ -1,15 +1,26 @@
-import { Question, ParsingResult, QuestionOption } from "@/types/paper";
+import {
+  Question,
+  ParsingResult,
+  QuestionOption,
+  QuestionSubPart,
+} from "@/types/paper";
 
 // Supported unsupported pattern detectors
-// Internal choice on its own line or explicitly phrased
-const INTERNAL_CHOICE_LINE_REGEX = /^\s*(?:or|either\s+.*?\s+or|attempt\s+any\b|choose\s+any\b|section\s+[a-z]\s*\(answer\s+any)\b/i;
+const INTERNAL_CHOICE_LINE_REGEX =
+  /^\s*(?:or|either\s+.*?\s+or|attempt\s+any\b|choose\s+any\b|section\s+[a-z]\s*\(answer\s+any)\b/i;
 const STANDALONE_OR_REGEX = /^\s*OR\s*$/;
 
 // For fractional/negative marks:
-// Square brackets: [2.5], [2.5 marks], [-1], [-1 marks]
-// Parentheses: require explicit 'mark' or 'm' to avoid matching math expressions like (-15) or (3.14)
-const FRACTIONAL_MARKS_REGEX = /\[\s*\d+\.\d+\s*(?:marks?|m)?\s*\]|\(\s*\d+\.\d+\s+(?:marks?|m)\s*\)/i;
-const NEGATIVE_MARKS_REGEX = /\[\s*-\d+\s*(?:marks?|m)?\s*\]|\(\s*-\d+\s+(?:marks?|m)\s*\)/i;
+const FRACTIONAL_MARKS_REGEX =
+  /\[\s*\d+\.\d+\s*(?:marks?|m)?\s*\]|\(\s*\d+\.\d+\s+(?:marks?|m)\s*\)/i;
+const NEGATIVE_MARKS_REGEX =
+  /\[\s*-\d+\s*(?:marks?|m)?\s*\]|\(\s*-\d+\s+(?:marks?|m)\s*\)/i;
+
+// Sub-part patterns e.g. "(a) ", "(b) ", "a) ", "i) ", "(i) "
+const SUB_PART_REGEX = /^\s*(?:\(([a-d]|[ivx]+)\)|([a-d]|[ivx]+)\))\s+(.*)$/i;
+
+// Section divider e.g. "Section A", "SECTION - B", "Section C (1 mark each)"
+const SECTION_HEADER_REGEX = /^\s*section\s*[-–:]?\s*([a-e])\b(?:\s*[:\-\(].*)?$/i;
 
 interface RawBlock {
   headerNumber: number;
@@ -17,8 +28,10 @@ interface RawBlock {
   marks: number | null;
   textLines: string[];
   options: QuestionOption[];
+  subParts: QuestionSubPart[];
   answerKey?: string;
   rawText: string;
+  section?: string;
 }
 
 /**
@@ -37,12 +50,14 @@ export function parsePaperText(
 
   let currentBlock: RawBlock | null = null;
   let inPreamble = true;
+  let currentSection: string | undefined = undefined;
 
   // Regex patterns
   // Matches "1. ", "1) ", "Q1. ", "Question 1: ", "1: "
   const questionStartRegex = /^\s*(?:(?:q|question)\s*)?(\d+)[\.\:\)]\s*(.*)$/i;
   // Matches "[3 marks]", "(3 marks)", "[3m]", "[3]"
-  const marksRegex = /\[\s*(\d+)\s*(?:marks?|m)?\s*\]|\(\s*(\d+)\s*(?:marks?|m)\s*\)/i;
+  const marksRegex =
+    /\[\s*(\d+)\s*(?:marks?|m)?\s*\]|\(\s*(\d+)\s*(?:marks?|m)\s*\)/i;
   // Matches "A. ", "A) ", "(A) ", "a. "
   const optionRegex = /^\s*(?:\(?([A-Da-d])[\.\)]|\(([A-Da-d])\))\s*(.+)$/;
   // Matches "Answer: A", "Ans: 1", "Answer - C", "Solution: 4"
@@ -65,7 +80,22 @@ export function parsePaperText(
       );
     }
 
-    if (currentBlock.marks === null) {
+    // Sub-parts marks calculation for senior case-based questions:
+    // If sub-parts have individual marks, compute question marks as sum of sub-parts
+    let finalMarks = currentBlock.marks;
+    if (currentBlock.subParts.length > 0) {
+      const subPartsWithMarks = currentBlock.subParts.filter(
+        (sp) => sp.marks !== null && sp.marks !== undefined && sp.marks > 0
+      );
+      if (subPartsWithMarks.length > 0) {
+        const subSum = subPartsWithMarks.reduce((acc, sp) => acc + (sp.marks || 0), 0);
+        if (finalMarks === null || finalMarks === 0) {
+          finalMarks = subSum;
+        }
+      }
+    }
+
+    if (finalMarks === null) {
       parseWarnings.push(
         `Question ${currentBlock.headerNumber} has no valid mark specified (e.g. '[3 marks]').`
       );
@@ -76,10 +106,12 @@ export function parsePaperText(
       number: currentBlock.headerNumber,
       text: questionText,
       type,
-      marks: currentBlock.marks,
+      marks: finalMarks,
       options: currentBlock.options,
+      subParts: currentBlock.subParts.length > 0 ? currentBlock.subParts : undefined,
       answerKey: currentBlock.answerKey,
       rawText: currentBlock.rawText.trim(),
+      section: currentBlock.section,
     };
 
     questions.push(question);
@@ -98,8 +130,18 @@ export function parsePaperText(
       continue;
     }
 
+    // Check for Section headers (e.g. Section A, Section B)
+    if (SECTION_HEADER_REGEX.test(trimmedLine)) {
+      currentSection = trimmedLine;
+      finalizeCurrentBlock();
+      continue;
+    }
+
     // Check for global unsupported patterns
-    if (INTERNAL_CHOICE_LINE_REGEX.test(trimmedLine) || STANDALONE_OR_REGEX.test(trimmedLine)) {
+    if (
+      INTERNAL_CHOICE_LINE_REGEX.test(trimmedLine) ||
+      STANDALONE_OR_REGEX.test(trimmedLine)
+    ) {
       unsupportedFeaturesDetected.push(
         `Unsupported option pattern detected on line ${i + 1}: "${trimmedLine}". This MVP supports compulsory papers only.`
       );
@@ -137,7 +179,6 @@ export function parsePaperText(
         if (!isNaN(markVal) && markVal > 0) {
           parsedMarks = markVal;
         }
-        // Remove the marks part from question text
         remainingText = remainingText.replace(marksFound[0], "").trim();
       }
 
@@ -147,7 +188,9 @@ export function parsePaperText(
         marks: parsedMarks,
         textLines: remainingText ? [remainingText] : [],
         options: [],
+        subParts: [],
         rawText: rawLine,
+        section: currentSection,
       };
       continue;
     }
@@ -169,9 +212,42 @@ export function parsePaperText(
         continue;
       }
 
-      // If an answer line has already occurred in this question block, any following non-question line is unparsed!
+      // If an answer line has already occurred in this question block, any following non-question line is unparsed
       if (currentBlock.answerKey) {
-        unparsedLines.push(`[Post-Answer line after Q${currentBlock.headerNumber}] ${trimmedLine}`);
+        unparsedLines.push(
+          `[Post-Answer line after Q${currentBlock.headerNumber}] ${trimmedLine}`
+        );
+        continue;
+      }
+
+      // Check for case-based question sub-parts: e.g. "(a) Calculate ... [1 mark]" or "(i) ..."
+      const subPartMatch = trimmedLine.match(SUB_PART_REGEX);
+      const isSubPart =
+        subPartMatch &&
+        (marksRegex.test(trimmedLine) ||
+          currentBlock.subParts.length > 0 ||
+          /^\s*\((?:[ivx]+|[e-z])\)/i.test(trimmedLine));
+
+      if (isSubPart && subPartMatch) {
+        const subLabel = `(${subPartMatch[1] || subPartMatch[2]})`;
+        let subText = (subPartMatch[3] || "").trim();
+        let subMarks: number | null = null;
+
+        const subMarksMatch = subText.match(marksRegex);
+        if (subMarksMatch) {
+          const mVal = parseInt(subMarksMatch[1] || subMarksMatch[2], 10);
+          if (!isNaN(mVal) && mVal > 0) {
+            subMarks = mVal;
+          }
+          subText = subText.replace(subMarksMatch[0], "").trim();
+        }
+
+        currentBlock.subParts.push({
+          label: subLabel,
+          text: subText,
+          marks: subMarks,
+        });
+        currentBlock.textLines.push(trimmedLine);
         continue;
       }
 
@@ -255,7 +331,9 @@ function mergeAnswerKey(
       if (matchedQ) {
         matchedQ.answerKey = answerVal;
       } else {
-        unparsedLines.push(`[Answer Key for unknown Question ${qNum}] ${trimmed}`);
+        unparsedLines.push(
+          `[Answer Key for unknown Question ${qNum}] ${trimmed}`
+        );
       }
     } else {
       unparsedLines.push(`[Unmatched Answer Key Line] ${trimmed}`);

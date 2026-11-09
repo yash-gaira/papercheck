@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   aiConfigured: boolean;
@@ -23,23 +24,26 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
             PaperCheck
           </span>
           <span className="hidden sm:inline-block text-[10px] uppercase font-mono tracking-wider text-ink-secondary pl-2 border-l border-ink-rule">
-            Class 6–8 Mathematics
+            Classes 6–12 &bull; Maths &amp; Science
           </span>
         </div>
 
-        {/* Quiet status chip & info trigger */}
+        {/* Quiet status chip, theme toggle & info trigger */}
         <div className="flex items-center space-x-3 text-xs">
           {aiConfigured ? (
-            <div className="flex items-center space-x-2 font-mono text-[11px] text-pencil-green bg-pencil-faint border border-pencil-border px-2.5 py-1 rounded-[3px]">
+            <div className="hidden xs:flex items-center space-x-2 font-mono text-[11px] text-pencil-green bg-pencil-faint border border-pencil-border px-2.5 py-1 rounded-[3px]">
               <span className="w-1.5 h-1.5 rounded-full bg-pencil-green inline-block" />
               <span>BharatCode active ({modelName || "qwen-3.8-27b"})</span>
             </div>
           ) : (
-            <div className="flex items-center space-x-2 font-mono text-[11px] text-ink-secondary bg-paper-bg border border-ink-rule px-2.5 py-1 rounded-[3px]">
+            <div className="hidden xs:flex items-center space-x-2 font-mono text-[11px] text-ink-secondary bg-paper-bg border border-ink-rule px-2.5 py-1 rounded-[3px]">
               <span className="w-1.5 h-1.5 rounded-full bg-ink-muted inline-block" />
               <span>Deterministic Mode (AI Key Not Set)</span>
             </div>
           )}
+
+          {/* Theme Selector */}
+          <ThemeToggle />
 
           <button
             onClick={() => setShowInfo(true)}
@@ -72,14 +76,14 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
               </button>
             </div>
 
-            <div className="mt-4 space-y-3.5 text-xs text-ink-secondary leading-relaxed">
+            <div className="mt-4 space-y-3.5 text-xs text-ink-secondary leading-relaxed max-h-[70vh] overflow-y-auto pr-1">
               <div className="pb-3 border-b border-ink-faint">
                 <span className="font-mono text-[10px] uppercase font-bold text-ink block mb-1">
                   Scope &amp; Standard
                 </span>
                 <p>
                   Engineered specifically for school teachers reviewing English-language Mathematics
-                  papers (Classes 6–8) with up to 20 compulsory questions.
+                  and Science question papers (Classes 6–12) with up to 20 compulsory questions.
                 </p>
               </div>
 
@@ -88,8 +92,10 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
                   Verification System
                 </span>
                 <ul className="space-y-1 font-mono text-[11px] text-ink">
-                  <li>01. Deterministic rules: Marks sums, gaps, exact duplicate wording, MCQ structure.</li>
-                  <li>02. BharatCode review: Semantic ambiguity, multiple primes/answers, missing context.</li>
+                  <li>01. Deterministic rules: Marks sums, gaps, duplicate wording, MCQ structure.</li>
+                  <li>02. Science rules: SI unit consistency, IUPAC formula casing, equation balance.</li>
+                  <li>03. Senior classes: Section dividers, case-based sub-parts (a, b, c) summation.</li>
+                  <li>04. BharatCode review: Semantic ambiguity, multiple primes/answers, missing context.</li>
                 </ul>
               </div>
 
@@ -98,18 +104,10 @@ export const Header: React.FC<HeaderProps> = ({ aiConfigured, modelName }) => {
                   Paper Privacy
                 </span>
                 <p>
-                  Drafts reside strictly in browser memory and are not stored in any database. AI checks send question text securely over HTTPS to the server-side BharatCode endpoint.
+                  All parsing and deterministic rules execute entirely inside the client or server memory.
+                  No papers or answer keys are stored in any database.
                 </p>
               </div>
-            </div>
-
-            <div className="mt-6 pt-3 border-t border-ink-rule flex justify-end">
-              <button
-                onClick={() => setShowInfo(false)}
-                className="px-4 py-1.5 bg-ink text-paper-surface hover:bg-black font-mono text-xs rounded-[2px] transition-colors"
-              >
-                Dismiss Note
-              </button>
             </div>
           </div>
         </div>

@@ -1,8 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { PaperMetadata, ClassGrade, ClassGradeValues } from "@/types/paper";
-import { SAMPLE_DELIBERATE_ERRORS, SAMPLE_CLEAN, SamplePaper } from "@/lib/samples";
+import {
+  PaperMetadata,
+  ClassGrade,
+  ClassGradeValues,
+  Subject,
+  SubjectValues,
+  ScienceSubSubject,
+  ScienceSubSubjectValues,
+} from "@/types/paper";
+import {
+  SAMPLE_DELIBERATE_ERRORS,
+  SAMPLE_CLEAN,
+  SAMPLE_SCIENCE_ERRORS,
+  SAMPLE_SCIENCE_CLEAN,
+  SamplePaper,
+} from "@/lib/samples";
 
 interface Step1AddPaperProps {
   metadata: PaperMetadata;
@@ -33,6 +47,9 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
 }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const isSeniorClass =
+    metadata.classGrade === "Class 11" || metadata.classGrade === "Class 12";
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     if (!metadata.title.trim()) {
@@ -56,7 +73,7 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
       {/* Paper Surface Form Container */}
       <div className="bg-paper-surface border border-ink-rule p-6 sm:p-8 rounded-[3px] shadow-sheet">
         {/* Section Header & Sample Loaders */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between pb-5 border-b border-ink-rule gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between pb-5 border-b border-ink-rule gap-3">
           <div>
             <span className="font-mono text-[10px] tracking-widest uppercase text-ink-secondary block">
               Section 01 / Intake
@@ -67,21 +84,35 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
           </div>
 
           {/* Understated Sample Paper Loaders */}
-          <div className="flex items-baseline space-x-2 text-xs">
-            <span className="font-mono text-[11px] text-ink-muted">Specimens:</span>
+          <div className="flex flex-wrap items-baseline gap-1.5 text-xs">
+            <span className="font-mono text-[11px] text-ink-muted mr-1">Specimens:</span>
             <button
               type="button"
               onClick={() => onLoadSample(SAMPLE_DELIBERATE_ERRORS)}
-              className="font-mono text-[11px] text-ink hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              className="font-mono text-[10.5px] text-ink hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
             >
-              Demo with Errors <span className="text-ink-muted">[6 Qs]</span>
+              Maths (Errors) <span className="text-ink-muted">[6 Qs]</span>
             </button>
             <button
               type="button"
               onClick={() => onLoadSample(SAMPLE_CLEAN)}
-              className="font-mono text-[11px] text-ink hover:text-pencil-green hover:border-pencil-green px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              className="font-mono text-[10.5px] text-ink hover:text-pencil-green hover:border-pencil-green px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
             >
-              Clean Sample <span className="text-ink-muted">[5 Qs]</span>
+              Maths (Clean) <span className="text-ink-muted">[5 Qs]</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onLoadSample(SAMPLE_SCIENCE_ERRORS)}
+              className="font-mono text-[10.5px] text-ink hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+            >
+              Science (Errors) <span className="text-ink-muted">[6 Qs]</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onLoadSample(SAMPLE_SCIENCE_CLEAN)}
+              className="font-mono text-[10.5px] text-ink hover:text-pencil-green hover:border-pencil-green px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+            >
+              Science (Clean) <span className="text-ink-muted">[5 Qs]</span>
             </button>
           </div>
         </div>
@@ -114,11 +145,11 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
             </div>
 
             {/* Class Selector as Segmented Control */}
-            <div>
+            <div className="sm:col-span-2">
               <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1.5">
                 Target Class <span className="text-redpen">*</span>
               </label>
-              <div className="grid grid-cols-3 border border-ink-rule rounded-[2px] p-0.5 bg-paper-bg">
+              <div className="flex sm:grid sm:grid-cols-7 overflow-x-auto no-scrollbar border border-ink-rule rounded-[2px] p-0.5 bg-paper-bg gap-0.5">
                 {ClassGradeValues.map((cls) => {
                   const isSelected = metadata.classGrade === cls;
                   const classNum = cls.replace("Class ", "");
@@ -126,29 +157,108 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
                     <button
                       key={cls}
                       type="button"
-                      onClick={() => onMetadataChange({ ...metadata, classGrade: cls as ClassGrade })}
-                      className={`py-1 text-center font-mono text-xs font-semibold rounded-[2px] transition-colors ${
+                      onClick={() => {
+                        const newMeta: PaperMetadata = {
+                          ...metadata,
+                          classGrade: cls as ClassGrade,
+                        };
+                        // Clear subSubject if changing out of 11-12
+                        if (cls !== "Class 11" && cls !== "Class 12") {
+                          delete newMeta.subSubject;
+                        }
+                        onMetadataChange(newMeta);
+                      }}
+                      className={`min-w-[42px] py-1 text-center font-mono text-xs font-semibold rounded-[2px] transition-colors ${
                         isSelected
                           ? "bg-ink text-paper-surface shadow-xs"
                           : "text-ink-secondary hover:text-ink"
                       }`}
                     >
-                      Cl. {classNum}
+                      {classNum}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Subject */}
+            {/* Subject Segmented Control */}
             <div>
               <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1.5">
-                Subject
+                Subject <span className="text-redpen">*</span>
               </label>
-              <div className="pb-1.5 border-b border-ink-faint text-ink-muted font-mono text-xs pt-1">
-                Mathematics <span className="text-[10px] text-ink-muted/70">(compulsory)</span>
+              <div className="grid grid-cols-2 border border-ink-rule rounded-[2px] p-0.5 bg-paper-bg">
+                {SubjectValues.map((sub) => {
+                  const isSelected = metadata.subject === sub;
+                  return (
+                    <button
+                      key={sub}
+                      type="button"
+                      onClick={() => {
+                        const newMeta: PaperMetadata = {
+                          ...metadata,
+                          subject: sub as Subject,
+                        };
+                        if (sub === "Science" && isSeniorClass && !newMeta.subSubject) {
+                          newMeta.subSubject = "Physics";
+                        } else if (sub === "Mathematics") {
+                          delete newMeta.subSubject;
+                        }
+                        onMetadataChange(newMeta);
+                      }}
+                      className={`py-1 text-center font-mono text-xs font-semibold rounded-[2px] transition-colors ${
+                        isSelected
+                          ? "bg-ink text-paper-surface shadow-xs"
+                          : "text-ink-secondary hover:text-ink"
+                      }`}
+                    >
+                      {sub}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
+            {/* Science Sub-subject for Class 11-12 */}
+            {metadata.subject === "Science" && isSeniorClass ? (
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1.5">
+                  Discipline <span className="text-redpen">*</span>
+                </label>
+                <div className="grid grid-cols-3 border border-ink-rule rounded-[2px] p-0.5 bg-paper-bg">
+                  {ScienceSubSubjectValues.map((sub) => {
+                    const isSelected = (metadata.subSubject || "Physics") === sub;
+                    return (
+                      <button
+                        key={sub}
+                        type="button"
+                        onClick={() =>
+                          onMetadataChange({
+                            ...metadata,
+                            subSubject: sub as ScienceSubSubject,
+                          })
+                        }
+                        className={`py-1 text-center font-mono text-[11px] font-semibold rounded-[2px] transition-colors ${
+                          isSelected
+                            ? "bg-ink text-paper-surface shadow-xs"
+                            : "text-ink-secondary hover:text-ink"
+                        }`}
+                      >
+                        {sub}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1.5">
+                  Curriculum Scope
+                </label>
+                <div className="pb-1.5 border-b border-ink-faint text-ink-muted font-mono text-xs pt-1 truncate">
+                  {metadata.subject} &bull; Compulsory
+                </div>
+              </div>
+            )}
 
             {/* Expected Total Marks */}
             <div>
@@ -204,40 +314,63 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
             </div>
           </div>
 
-          {/* Exam Specimen Format Guide */}
+          {/* Exam Specimen Format Guide (Dynamic based on Subject) */}
           <div className="border border-ink-rule rounded-[2px] p-4 bg-paper-bg/60">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between pb-2 border-b border-ink-rule/60 gap-1">
               <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink">
-                Format Specimen (Documented Syntax)
+                Format Specimen ({metadata.subject} Syntax)
               </span>
               <span className="font-mono text-[10px] text-ink-secondary">
-                Compulsory papers only &bull; Internal choices (OR) flagged
+                Compulsory papers &bull; Case-based sub-parts (a, b) supported &bull; Internal choices (OR) flagged
               </span>
             </div>
 
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
-              <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                <div className="flex justify-between text-ink-secondary text-[11px]">
-                  <span>1. Calculate 3/4 + 1/4.</span>
-                  <span className="text-ink font-bold">[3 marks]</span>
+            {metadata.subject === "Science" ? (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
+                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                  <div className="flex justify-between text-ink-secondary text-[11px]">
+                    <span>1. A car accelerates from rest at 2 m/s² for 5 s. Calculate final velocity in m/s.</span>
+                    <span className="text-ink font-bold">[3 marks]</span>
+                  </div>
+                  <div className="text-pencil-green font-medium">Answer: 10 m/s</div>
+                  <div className="text-[10px] text-ink-muted">Physical SI units required in calculations</div>
                 </div>
-                <div className="text-pencil-green font-medium">Answer: 1</div>
-              </div>
 
-              <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                <div className="flex justify-between text-ink-secondary text-[11px]">
-                  <span>2. Which of these is prime?</span>
-                  <span className="text-ink font-bold">[3 marks]</span>
+                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                  <div className="flex justify-between text-ink-secondary text-[11px]">
+                    <span>2. Write balanced chemical equation: magnesium with oxygen.</span>
+                    <span className="text-ink font-bold">[2 marks]</span>
+                  </div>
+                  <div className="text-pencil-green font-medium">Answer: 2Mg + O2 -&gt; 2MgO</div>
+                  <div className="text-[10px] text-ink-muted">IUPAC capitalization &amp; stoichiometry checked</div>
                 </div>
-                <div className="grid grid-cols-4 gap-1 text-[11px] text-ink-muted">
-                  <span>A. 2</span>
-                  <span>B. 3</span>
-                  <span>C. 4</span>
-                  <span>D. 6</span>
-                </div>
-                <div className="text-pencil-green font-medium">Answer: A</div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
+                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                  <div className="flex justify-between text-ink-secondary text-[11px]">
+                    <span>1. Calculate 3/4 + 1/4.</span>
+                    <span className="text-ink font-bold">[3 marks]</span>
+                  </div>
+                  <div className="text-pencil-green font-medium">Answer: 1</div>
+                  <div className="text-[10px] text-ink-muted">Single compulsory questions with square bracket marks</div>
+                </div>
+
+                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                  <div className="flex justify-between text-ink-secondary text-[11px]">
+                    <span>2. Which of these is a prime number?</span>
+                    <span className="text-ink font-bold">[3 marks]</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 text-[11px] text-ink-muted">
+                    <span>A. 2</span>
+                    <span>B. 3</span>
+                    <span>C. 4</span>
+                    <span>D. 6</span>
+                  </div>
+                  <div className="text-pencil-green font-medium">Answer: A</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Question Paper Textarea - Lined Paper Texture */}

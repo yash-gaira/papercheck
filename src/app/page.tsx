@@ -17,6 +17,7 @@ import {
 } from "@/types/paper";
 import { parsePaperText } from "@/lib/parser";
 import { runDeterministicChecks } from "@/lib/checker";
+import { runScienceChecks } from "@/lib/scienceChecker";
 import { SamplePaper } from "@/lib/samples";
 import { InteractivePaperCanvas } from "@/components/InteractivePaperCanvas";
 
@@ -136,12 +137,11 @@ export default function Home() {
 
   // Core Check Execution: Deterministic + BharatCode AI (if configured)
   const runAllChecks = async (questionsToTest: Question[]) => {
-    // 1. Deterministic Checks
-    const deterministicReport = runDeterministicChecks(
-      questionsToTest,
-      metadata,
-      unsupportedFeatures
-    );
+    // 1. Deterministic Checks (Mathematics vs Science)
+    const deterministicReport =
+      metadata.subject === "Science"
+        ? runScienceChecks(questionsToTest, metadata, unsupportedFeatures)
+        : runDeterministicChecks(questionsToTest, metadata, unsupportedFeatures);
 
     // If AI is not configured, we're done
     if (!aiConfigured) {
@@ -419,7 +419,7 @@ export default function Home() {
       {/* Quiet, Single-Line Editorial Footer */}
       <footer className="no-print mt-auto py-5 border-t border-ink-rule text-center font-mono text-[11px] text-ink-secondary bg-paper-surface">
         <p>
-          Prayaas PaperCheck &bull; Built for BharatCode Build League &bull; Class 6–8 Mathematics compulsory papers &bull; In-memory draft security
+          Prayaas PaperCheck &bull; Built for BharatCode Build League &bull; Classes 6–12 Mathematics &amp; Science &bull; In-memory draft security
         </p>
       </footer>
     </div>

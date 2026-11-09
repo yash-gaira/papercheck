@@ -10,6 +10,7 @@ export interface SamplePaper {
   rawAnswerKeyText: string;
 }
 
+// 1. Mathematics – Demo with Errors (Class 7)
 export const SAMPLE_DELIBERATE_ERRORS: SamplePaper = {
   id: "sample-deliberate-errors",
   name: "Class 7 Mathematics (With Deliberate Errors)",
@@ -57,6 +58,7 @@ Answer: 49 sq cm`,
 6. 49 sq cm`,
 };
 
+// 2. Mathematics – Clean Sample (Class 7)
 export const SAMPLE_CLEAN: SamplePaper = {
   id: "sample-clean",
   name: "Class 7 Mathematics (Clean Paper)",
@@ -104,3 +106,100 @@ Answer: B`,
 5. B`,
 };
 
+// 3. Science – Demo with Errors (Class 10)
+export const SAMPLE_SCIENCE_ERRORS: SamplePaper = {
+  id: "sample-science-errors",
+  name: "Class 10 Science (With Deliberate Errors)",
+  description:
+    "Demo science paper with 6 questions (3 marks each, total 18 vs expected 20) featuring missing physical units, lowercase chemical formula co2, unbalanced chemical equation, and a missing figure citation.",
+  isClean: false,
+  metadata: {
+    title: "Class 10 Science Periodic Assessment 1",
+    classGrade: "Class 10",
+    subject: "Science",
+    expectedTotalMarks: 20,
+    timeAllowedMinutes: 45,
+    instructions: [
+      "All questions are compulsory.",
+      "Include relevant chemical equations and SI units.",
+    ],
+  },
+  rawPaperText: `1. A car accelerates from rest to a velocity of 25 m/s in 10 seconds. Calculate the acceleration of the car in m/s². [3 marks]
+Answer: 2.5
+
+2. Which gas is released during photosynthesis? [3 marks]
+A. co2
+B. O2
+C. N2
+D. H2
+Answer: B
+
+3. Write the chemical equation for the formation of water from hydrogen and oxygen gas. [3 marks]
+Answer: H2 + O2 -> H2O
+
+4. Find the equivalent resistance of the circuit shown in the figure below. [3 marks]
+Answer: 6 ohms
+
+5. Which organelle is known as the powerhouse of the cell? [3 marks]
+A. Mitochondria
+B. Ribosome
+C. Golgi apparatus
+D. Nucleus
+Answer: A
+
+6. State Ohm's Law and express it mathematically. [3 marks]
+Answer: V = IR`,
+  rawAnswerKeyText: `1. 2.5
+2. B
+3. H2 + O2 -> H2O
+4. 6 ohms
+5. A
+6. V = IR`,
+};
+
+// 4. Science – Clean Sample (Class 9)
+export const SAMPLE_SCIENCE_CLEAN: SamplePaper = {
+  id: "sample-science-clean",
+  name: "Class 9 Science (Clean Paper)",
+  description:
+    "Standard verified science paper with 5 questions (4 marks each, total 20 = expected 20), proper SI units, valid IUPAC formulas, and complete answer key.",
+  isClean: true,
+  metadata: {
+    title: "Class 9 Science Term Assessment",
+    classGrade: "Class 9",
+    subject: "Science",
+    expectedTotalMarks: 20,
+    timeAllowedMinutes: 45,
+    instructions: [
+      "All questions are compulsory.",
+      "Write units clearly for numerical answers.",
+    ],
+  },
+  rawPaperText: `1. A runner travels a distance of 100 meters in 5 seconds. Calculate the runner's speed in m/s. [4 marks]
+Answer: 20 m/s
+
+2. What is the chemical formula of Sodium Chloride? [4 marks]
+A. NaCl
+B. Na2Cl
+C. NaCl2
+D. Na2Cl2
+Answer: A
+
+3. What is the SI unit of force? [4 marks]
+A. Joule
+B. Newton
+C. Pascal
+D. Watt
+Answer: B
+
+4. Define inertia and give one everyday example. [4 marks]
+Answer: Inertia is the property of an object to resist changes in its state of motion.
+
+5. Calculate the kinetic energy of an object of mass 2 kg moving at 3 m/s. [4 marks]
+Answer: 9 Joules`,
+  rawAnswerKeyText: `1. 20 m/s
+2. A
+3. B
+4. Inertia is the property of an object to resist changes in its state of motion.
+5. 9 Joules`,
+};

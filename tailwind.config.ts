@@ -10,27 +10,27 @@ const config: Config = {
     extend: {
       colors: {
         paper: {
-          bg: "#F6F3EC",
-          surface: "#FBFAF6",
-          ruled: "#EAE5D9",
+          bg: "var(--paper-bg)",
+          surface: "var(--paper-surface)",
+          ruled: "var(--paper-ruled)",
         },
         ink: {
-          DEFAULT: "#1A1A18",
-          secondary: "#5C5A54",
-          muted: "#8C897E",
-          rule: "#D9D4C7",
-          faint: "#EBE7DC",
+          DEFAULT: "var(--ink)",
+          secondary: "var(--ink-secondary)",
+          muted: "var(--ink-muted)",
+          rule: "var(--ink-rule)",
+          faint: "var(--ink-faint)",
         },
         redpen: {
-          DEFAULT: "#C8372D",
-          dark: "#A62B22",
-          faint: "#FDF2F0",
-          border: "#F3C5C1",
+          DEFAULT: "var(--redpen)",
+          dark: "var(--redpen-dark)",
+          faint: "var(--redpen-faint)",
+          border: "var(--redpen-border)",
         },
         pencil: {
-          green: "#3F6B4E",
-          faint: "#F2F7F4",
-          border: "#C8DC CF",
+          green: "var(--pencil-green)",
+          faint: "var(--pencil-faint)",
+          border: "var(--pencil-border)",
         },
       },
       fontFamily: {

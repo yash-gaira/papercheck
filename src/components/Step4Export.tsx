@@ -173,7 +173,10 @@ export const Step4Export: React.FC<Step4ExportProps> = ({
               {metadata.title}
             </h1>
             <div className="flex justify-between items-baseline font-mono text-xs pt-2 text-ink-secondary">
-              <span>{metadata.classGrade} &bull; {metadata.subject}</span>
+              <span>
+                {metadata.classGrade} &bull; {metadata.subject}
+                {metadata.subSubject ? ` (${metadata.subSubject})` : ""}
+              </span>
               <span>Max Marks: {metadata.expectedTotalMarks}</span>
               {metadata.timeAllowedMinutes && <span>Time: {metadata.timeAllowedMinutes} Mins</span>}
             </div>
@@ -192,34 +195,69 @@ export const Step4Export: React.FC<Step4ExportProps> = ({
 
           {/* Questions Body */}
           <div className="mt-6 space-y-6">
-            {questions.map((q) => (
-              <div key={q.id} className="page-break-inside-avoid text-sm">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <p className="leading-relaxed">
-                      <span className="font-mono font-bold mr-1.5">Q{q.number}.</span>
-                      {q.text}
-                    </p>
+            {questions.map((q, idx) => {
+              const prevQ = idx > 0 ? questions[idx - 1] : null;
+              const showSectionHeader = q.section && (!prevQ || prevQ.section !== q.section);
 
-                    {/* MCQ Options */}
-                    {q.type === "mcq" && (
-                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 pl-4 font-mono text-xs text-ink">
-                        {q.options.map((opt) => (
-                          <div key={opt.label} className="flex items-baseline space-x-1.5">
-                            <span className="font-bold">({opt.label})</span>
-                            <span>{opt.text}</span>
+              return (
+                <React.Fragment key={q.id}>
+                  {showSectionHeader && (
+                    <div className="pt-4 pb-2 border-b border-ink">
+                      <span className="font-mono text-xs uppercase tracking-widest font-bold text-ink">
+                        {q.section}
+                      </span>
+                    </div>
+                  )}
+                  <div className="page-break-inside-avoid text-sm">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <p className="leading-relaxed">
+                          <span className="font-mono font-bold mr-1.5">Q{q.number}.</span>
+                          {q.text}
+                        </p>
+
+                        {/* Sub-parts for case-based / senior questions */}
+                        {q.subParts && q.subParts.length > 0 && (
+                          <div className="mt-2 pl-4 space-y-1.5 font-serif text-sm text-ink">
+                            {q.subParts.map((sp, sIdx) => (
+                              <div key={sIdx} className="flex justify-between items-baseline gap-2">
+                                <div>
+                                  <span className="font-mono font-bold text-xs mr-1.5 text-ink-secondary">
+                                    {sp.label}
+                                  </span>
+                                  <span>{sp.text}</span>
+                                </div>
+                                {sp.marks !== null && sp.marks !== undefined && (
+                                  <span className="font-mono text-xs text-ink-muted flex-shrink-0">
+                                    [{sp.marks} mark{sp.marks > 1 ? "s" : ""}]
+                                  </span>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                        )}
 
-                  <div className="text-right flex-shrink-0 font-mono text-xs font-semibold text-ink-secondary">
-                    [{q.marks ?? 0} mark{q.marks !== 1 ? "s" : ""}]
+                        {/* MCQ Options */}
+                        {q.type === "mcq" && (
+                          <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 pl-4 font-mono text-xs text-ink">
+                            {q.options.map((opt) => (
+                              <div key={opt.label} className="flex items-baseline space-x-1.5">
+                                <span className="font-bold">({opt.label})</span>
+                                <span>{opt.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-right flex-shrink-0 font-mono text-xs font-semibold text-ink-secondary">
+                        [{q.marks ?? 0} mark{q.marks !== 1 ? "s" : ""}]
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </React.Fragment>
+              );
+            })}
           </div>
 
           <div className="mt-12 text-center font-mono text-xs text-ink-muted border-t border-ink-rule pt-4">
@@ -239,7 +277,8 @@ export const Step4Export: React.FC<Step4ExportProps> = ({
               Answer Key
             </h1>
             <p className="font-mono text-xs text-ink-secondary">
-              {metadata.title} &bull; {metadata.classGrade} ({metadata.subject})
+              {metadata.title} &bull; {metadata.classGrade} ({metadata.subject}
+              {metadata.subSubject ? ` - ${metadata.subSubject}` : ""})
             </p>
           </div>
 

@@ -16,8 +16,18 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Prayaas PaperCheck — Question Paper Review",
   description:
-    "Catch question-paper mistakes before students encounter them. Quality review for school mathematics question papers.",
+    "Catch question-paper mistakes before students encounter them. Quality review for Classes 6–12 Mathematics and Science question papers.",
 };
+
+const themeScript = `
+(function() {
+  try {
+    var storedTheme = localStorage.getItem("papercheck-theme");
+    var theme = storedTheme || "paper";
+    document.documentElement.setAttribute("data-theme", theme);
+  } catch (e) {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -25,7 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeScript,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
