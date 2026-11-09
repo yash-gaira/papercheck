@@ -18,6 +18,7 @@ import {
   SamplePaper,
 } from "@/lib/samples";
 import { getClassFormatSpecimen } from "@/lib/classExamples";
+import { DropZoneUploader } from "./DropZoneUploader";
 
 interface Step1AddPaperProps {
   metadata: PaperMetadata;
@@ -57,6 +58,22 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
   );
 
   const specimen = getClassFormatSpecimen(metadata.classGrade, metadata.subject);
+
+  const handleTextLoaded = (text: string, mode: "replace" | "append") => {
+    if (mode === "append" && rawPaperText.trim()) {
+      onPaperTextChange(`${rawPaperText.trim()}\n\n${text.trim()}`);
+    } else {
+      onPaperTextChange(text.trim());
+    }
+  };
+
+  const handleDropOnTextarea = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const textData = e.dataTransfer.getData("text/plain");
+    if (textData && textData.trim()) {
+      e.preventDefault();
+      handleTextLoaded(textData, "append");
+    }
+  };
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
@@ -420,6 +437,23 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
             </div>
           </div>
 
+          {/* Custom Text Dropzone & Open-Source Photo-to-Text OCR */}
+          <div>
+            <div className="mb-1.5 flex justify-between items-baseline">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-secondary">
+                Upload or Drop Question Paper (Text or Photo)
+              </label>
+              <span className="font-mono text-[10px] text-ink-muted">
+                Open-source OCR &bull; Privacy protected
+              </span>
+            </div>
+            <DropZoneUploader
+              onTextLoaded={handleTextLoaded}
+              hasExistingText={Boolean(rawPaperText.trim())}
+              disabled={isAIStructuring}
+            />
+          </div>
+
           {/* Question Paper Textarea - Lined Paper Texture */}
           <div>
             <div className="flex justify-between items-baseline mb-2">
@@ -443,7 +477,8 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
                 rows={12}
                 value={rawPaperText}
                 onChange={(e) => onPaperTextChange(e.target.value)}
-                placeholder="Paste question paper text here in the documented format..."
+                onDrop={handleDropOnTextarea}
+                placeholder="Paste question paper text here, drag & drop a file, or upload a photo of the printed paper above..."
                 className="w-full p-4 lined-paper font-mono text-xs text-ink placeholder:text-ink-muted/50 focus:outline-none focus:bg-paper-surface"
                 required
               />
