@@ -12,11 +12,12 @@ import {
 } from "@/types/paper";
 import {
   SAMPLE_DELIBERATE_ERRORS,
-  SAMPLE_CLEAN,
   SAMPLE_SCIENCE_ERRORS,
-  SAMPLE_SCIENCE_CLEAN,
+  ALL_SAMPLES,
+  getDefaultSampleForClass,
   SamplePaper,
 } from "@/lib/samples";
+import { getClassFormatSpecimen } from "@/lib/classExamples";
 
 interface Step1AddPaperProps {
   metadata: PaperMetadata;
@@ -49,6 +50,13 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
 
   const isSeniorClass =
     metadata.classGrade === "Class 11" || metadata.classGrade === "Class 12";
+
+  const activeClassSample = getDefaultSampleForClass(
+    metadata.classGrade,
+    metadata.subject
+  );
+
+  const specimen = getClassFormatSpecimen(metadata.classGrade, metadata.subject);
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,35 +92,75 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
           </div>
 
           {/* Understated Sample Paper Loaders */}
-          <div className="flex flex-wrap items-baseline gap-1.5 text-xs">
-            <span className="font-mono text-[11px] text-ink-muted mr-1">Specimens:</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="font-mono text-[11px] text-ink-muted mr-1">Demos:</span>
+
+            {/* Quick button for the current active class */}
+            {activeClassSample && (
+              <button
+                type="button"
+                onClick={() => onLoadSample(activeClassSample)}
+                className="font-mono text-[10.5px] bg-paper-surface text-ink font-semibold border border-ink px-2 py-1 rounded-[2px] hover:bg-paper-bg transition-colors"
+                title={activeClassSample.description}
+              >
+                Load {metadata.classGrade} Demo
+              </button>
+            )}
+
+            {/* Dropdown for All Class Demos */}
+            <div className="relative">
+              <select
+                aria-label="Load demo paper for any class"
+                value=""
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  if (!selectedId) return;
+                  const found = ALL_SAMPLES.find((s) => s.id === selectedId);
+                  if (found) onLoadSample(found);
+                }}
+                className="font-mono text-[10.5px] text-ink bg-paper-surface border border-ink-rule hover:border-ink rounded-[2px] px-2 py-1 cursor-pointer focus:outline-none"
+              >
+                <option value="" disabled>
+                  All Classes (6–12) ▾
+                </option>
+                <optgroup label="Mathematics (Classes 6–12)">
+                  <option value="sample-class-6-maths">Class 6 Maths (LCM, Fractions, Ratio)</option>
+                  <option value="sample-clean">Class 7 Maths (Clean Specimen)</option>
+                  <option value="sample-deliberate-errors">Class 7 Maths (With Deliberate Errors)</option>
+                  <option value="sample-class-8-maths">Class 8 Maths (Algebra &amp; Exponents)</option>
+                  <option value="sample-class-9-maths">Class 9 Maths (Real Numbers &amp; Coord Geom)</option>
+                  <option value="sample-class-10-maths">Class 10 Maths (Quadratic, AP &amp; Case Study)</option>
+                  <option value="sample-class-11-maths">Class 11 Maths (Sets, Limits &amp; Calculus)</option>
+                  <option value="sample-class-12-maths">Class 12 Maths (Matrices, Integrals &amp; Prob)</option>
+                </optgroup>
+                <optgroup label="Science (Classes 6–12)">
+                  <option value="sample-class-6-science">Class 6 Science (Speed, Light, Nutrients)</option>
+                  <option value="sample-class-7-science">Class 7 Science (Acids, Bases &amp; Heat)</option>
+                  <option value="sample-class-8-science">Class 8 Science (Pressure &amp; Chemical Eqns)</option>
+                  <option value="sample-science-clean">Class 9 Science (Motion &amp; SI Units)</option>
+                  <option value="sample-science-errors">Class 10 Science (With Deliberate Errors)</option>
+                  <option value="sample-class-11-physics">Class 11 Physics (Kinematics &amp; Work-Energy)</option>
+                  <option value="sample-class-12-physics">Class 12 Physics (Circuits &amp; Electrostatics)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            {/* Quick Deliberate Errors Presets */}
             <button
               type="button"
               onClick={() => onLoadSample(SAMPLE_DELIBERATE_ERRORS)}
-              className="font-mono text-[10.5px] text-ink hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              className="font-mono text-[10.5px] text-ink-secondary hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              title="Class 7 Mathematics with duplicate questions, mismatching marks and prime number ambiguity"
             >
-              Maths (Errors) <span className="text-ink-muted">[6 Qs]</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onLoadSample(SAMPLE_CLEAN)}
-              className="font-mono text-[10.5px] text-ink hover:text-pencil-green hover:border-pencil-green px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
-            >
-              Maths (Clean) <span className="text-ink-muted">[5 Qs]</span>
+              Maths (Errors)
             </button>
             <button
               type="button"
               onClick={() => onLoadSample(SAMPLE_SCIENCE_ERRORS)}
-              className="font-mono text-[10.5px] text-ink hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              className="font-mono text-[10.5px] text-ink-secondary hover:text-redpen hover:border-redpen px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
+              title="Class 10 Science with missing units, lowercase co2 and unbalanced chemical equations"
             >
-              Science (Errors) <span className="text-ink-muted">[6 Qs]</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onLoadSample(SAMPLE_SCIENCE_CLEAN)}
-              className="font-mono text-[10.5px] text-ink hover:text-pencil-green hover:border-pencil-green px-2 py-1 border border-ink-rule rounded-[2px] transition-colors"
-            >
-              Science (Clean) <span className="text-ink-muted">[5 Qs]</span>
+              Science (Errors)
             </button>
           </div>
         </div>
@@ -314,63 +362,62 @@ export const Step1AddPaper: React.FC<Step1AddPaperProps> = ({
             </div>
           </div>
 
-          {/* Exam Specimen Format Guide (Dynamic based on Subject) */}
+          {/* Exam Specimen Format Guide (Dynamic based on selected Class & Subject) */}
           <div className="border border-ink-rule rounded-[2px] p-4 bg-paper-bg/60">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between pb-2 border-b border-ink-rule/60 gap-1">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink">
-                Format Specimen ({metadata.subject} Syntax)
-              </span>
+              <div className="flex flex-wrap items-baseline gap-2">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-ink">
+                  Format Specimen ({specimen.badge})
+                </span>
+                <span className="font-mono text-[10px] text-ink-secondary">
+                  &bull; {specimen.topicNote}
+                </span>
+              </div>
               <span className="font-mono text-[10px] text-ink-secondary">
-                Compulsory papers &bull; Case-based sub-parts (a, b) supported &bull; Internal choices (OR) flagged
+                Compulsory papers &bull; Case sub-parts (a, b) supported
               </span>
             </div>
 
-            {metadata.subject === "Science" ? (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
-                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                  <div className="flex justify-between text-ink-secondary text-[11px]">
-                    <span>1. A car accelerates from rest at 2 m/s² for 5 s. Calculate final velocity in m/s.</span>
-                    <span className="text-ink font-bold">[3 marks]</span>
-                  </div>
-                  <div className="text-pencil-green font-medium">Answer: 10 m/s</div>
-                  <div className="text-[10px] text-ink-muted">Physical SI units required in calculations</div>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
+              {/* Question 1 Example (Short Answer / Calculation) */}
+              <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                <div className="flex justify-between text-ink-secondary text-[11px] gap-2">
+                  <span>1. {specimen.q1.statement}</span>
+                  <span className="text-ink font-bold flex-shrink-0">
+                    [{specimen.q1.marks} mark{specimen.q1.marks > 1 ? "s" : ""}]
+                  </span>
                 </div>
-
-                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                  <div className="flex justify-between text-ink-secondary text-[11px]">
-                    <span>2. Write balanced chemical equation: magnesium with oxygen.</span>
-                    <span className="text-ink font-bold">[2 marks]</span>
-                  </div>
-                  <div className="text-pencil-green font-medium">Answer: 2Mg + O2 -&gt; 2MgO</div>
-                  <div className="text-[10px] text-ink-muted">IUPAC capitalization &amp; stoichiometry checked</div>
+                <div className="text-pencil-green font-medium">
+                  Answer: {specimen.q1.answerKey}
+                </div>
+                <div className="text-[10px] text-ink-muted">
+                  {specimen.q1.guideline}
                 </div>
               </div>
-            ) : (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-ink">
-                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                  <div className="flex justify-between text-ink-secondary text-[11px]">
-                    <span>1. Calculate 3/4 + 1/4.</span>
-                    <span className="text-ink font-bold">[3 marks]</span>
-                  </div>
-                  <div className="text-pencil-green font-medium">Answer: 1</div>
-                  <div className="text-[10px] text-ink-muted">Single compulsory questions with square bracket marks</div>
-                </div>
 
-                <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
-                  <div className="flex justify-between text-ink-secondary text-[11px]">
-                    <span>2. Which of these is a prime number?</span>
-                    <span className="text-ink font-bold">[3 marks]</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1 text-[11px] text-ink-muted">
-                    <span>A. 2</span>
-                    <span>B. 3</span>
-                    <span>C. 4</span>
-                    <span>D. 6</span>
-                  </div>
-                  <div className="text-pencil-green font-medium">Answer: A</div>
+              {/* Question 2 Example (Single-Answer MCQ) */}
+              <div className="p-2.5 bg-paper-surface border border-ink-faint rounded-[2px] space-y-1">
+                <div className="flex justify-between text-ink-secondary text-[11px] gap-2">
+                  <span>2. {specimen.q2.statement}</span>
+                  <span className="text-ink font-bold flex-shrink-0">
+                    [{specimen.q2.marks} mark{specimen.q2.marks > 1 ? "s" : ""}]
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1 text-[11px] text-ink-muted">
+                  {specimen.q2.options.map((opt) => (
+                    <span key={opt.label}>
+                      {opt.label}. {opt.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-pencil-green font-medium">
+                  Answer: {specimen.q2.answerKey}
+                </div>
+                <div className="text-[10px] text-ink-muted">
+                  {specimen.q2.guideline}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Question Paper Textarea - Lined Paper Texture */}
