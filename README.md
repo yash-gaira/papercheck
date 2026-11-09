@@ -53,8 +53,8 @@ Prayaas PaperCheck is an assessment quality assurance application designed for s
 ## 3. Technology Stack
 
 - **Framework:** Next.js 14 App Router with TypeScript (Strict mode).
-- **Styling:** Tailwind CSS with deep navy (`#0B192C`), warm white (`#FAFAF9`), and restrained teal (`#0D9488`).
-- **Icons:** Lucide React.
+- **Styling:** Tailwind CSS with "Paper and Red Pen" design system.
+- **Interactive 3D:** Lightweight Three.js sheet object with cursor/scroll reaction and step-reactive states.
 - **Validation:** Zod schemas for internal data and API contract validation.
 - **Test Runner:** Vitest with comprehensive unit and integration suites.
 - **Print Engine:** CSS `@media print` with readable A4 margins, page-break management, and strict omission of answers from student papers.
@@ -70,11 +70,12 @@ Prayaas PaperCheck is an assessment quality assurance application designed for s
 
 ### Installation
 ```bash
-# Clone or navigate to the repository directory
-cd mm
+# Clone repository
+git clone https://github.com/yash-gaira/papercheck.git
+cd papercheck
 
 # Install dependencies
-npm install --legacy-peer-deps
+npm install
 ```
 
 ### Environment Configuration
@@ -181,14 +182,20 @@ The test suite consists of 22 tests across 5 modules verifying all product requi
 | `tests/workflow.test.ts` | End-to-end verification of deliberate error sample vs clean sample, Zod draft schema validation, and student export data strictly excluding answers. |
 | `tests/state_and_stale.test.ts` | Question editing marking findings report stale, recheck lifecycle, finding dismissal with teacher note, and finding restoration. |
 
-Run tests anytime:
-```bash
-npm test
-```
+---
+
+## 9. Design System: "Paper and Red Pen"
+
+- **Paper Palette:** Warm off-white `#F6F3EC` (desk) and `#FBFAF6` (sheet surface).
+- **Ink:** Deep graphite `#1A1A18`, secondary `#5C5A54`, and hairline rules `#D9D4C7`.
+- **Red Pen Accent:** `#C8372D` used exclusively for annotations, errors, focus, and primary corrections.
+- **Pencil Green:** `#3F6B4E` for verified checks and approved ticks.
+- **Typography:** Editorial serif headlines (`Newsreader`), quiet grotesk body (`Geist`), and mono marks (`JetBrains Mono`).
+- **Interactive 3D Exam Sheet:** Purely presentational, lazy-loaded Three.js canvas featuring a curl-profiled exam sheet with subtle cursor tilt and step-reactive states (single sheet &rarr; fanned stack &rarr; red-pen annotated &rarr; split student/key sheets). An accessible SVG fallback is rendered for reduced motion.
 
 ---
 
-## 9. Security & Privacy Notice
+## 10. Security & Privacy Notice
 
 - **In-Memory Drafts:** All exam content is kept strictly in browser state for the active session. Content is never silently persisted to external databases.
 - **Untrusted Prompt Boundary:** Exam paper content sent to BharatCode is wrapped in `<untrusted_paper_data>` fencing with instructions forbidding prompt injection execution.
