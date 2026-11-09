@@ -1,100 +1,405 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Header } from "@/components/Header";
+import { StepIndicator } from "@/components/StepIndicator";
+import { Step1AddPaper } from "@/components/Step1AddPaper";
+import { Step2ConfirmQuestions } from "@/components/Step2ConfirmQuestions";
+import { Step3ReviewFindings } from "@/components/Step3ReviewFindings";
+import { Step4Export } from "@/components/Step4Export";
+import {
+  Question,
+  PaperMetadata,
+  CheckReport,
+  Finding,
+  ProposedCorrection,
+  PaperDraft,
+} from "@/types/paper";
+import { parsePaperText } from "@/lib/parser";
+import { runDeterministicChecks } from "@/lib/checker";
+import { SamplePaper } from "@/lib/samples";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [step, setStep] = useState<number>(1);
+  const [aiConfigured, setAiConfigured] = useState<boolean>(false);
+  const [modelName, setModelName] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | undefined>(undefined);
+  const [isAIStructuring, setIsAIStructuring] = useState<boolean>(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  // Metadata
+  const [metadata, setMetadata] = useState<PaperMetadata>({
+    title: "",
+    classGrade: "Class 7",
+    subject: "Mathematics",
+    expectedTotalMarks: 20,
+    timeAllowedMinutes: 45,
+    instructions: [
+      "All questions are compulsory.",
+      "Check your calculations before submitting.",
+    ],
+  });
+
+  // Raw inputs
+  const [rawPaperText, setRawPaperText] = useState<string>("");
+  const [rawAnswerKeyText, setRawAnswerKeyText] = useState<string>("");
+
+  // Extracted data
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [unparsedLines, setUnparsedLines] = useState<string[]>([]);
+  const [unsupportedFeatures, setUnsupportedFeatures] = useState<string[]>([]);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+
+  // History for Undo
+  const [history, setHistory] = useState<Question[][]>([]);
+
+  // Findings Report
+  const [checkReport, setCheckReport] = useState<CheckReport>({
+    findings: [],
+    isStale: false,
+    lastCheckedAt: "",
+    checksPerformed: [],
+    checksNotPerformed: [],
+    marksSum: null,
+    isMarksSumReliable: false,
+    expectedMarks: 20,
+  });
+
+  // Check AI configuration status on mount
+  useEffect(() => {
+    async function checkStatus() {
+      try {
+        const res = await fetch("/api/status");
+        if (res.ok) {
+          const data = await res.json();
+          setAiConfigured(Boolean(data.aiConfigured));
+          setModelName(data.modelName || null);
+        }
+      } catch {
+        // Deterministic mode fallback
+        setAiConfigured(false);
+      }
+    }
+    checkStatus();
+  }, []);
+
+  // Quick Load Sample
+  const handleLoadSample = (sample: SamplePaper) => {
+    setMetadata(sample.metadata);
+    setRawPaperText(sample.rawPaperText);
+    setRawAnswerKeyText(sample.rawAnswerKeyText);
+
+    // Parse immediately for convenience
+    const parsed = parsePaperText(sample.rawPaperText, sample.rawAnswerKeyText);
+    setQuestions(parsed.questions);
+    setUnparsedLines(parsed.unparsedLines);
+    setUnsupportedFeatures(parsed.unsupportedFeaturesDetected);
+    setParseWarnings(parsed.parseWarnings);
+    setHistory([]);
+  };
+
+  // Step 1 -> Step 2
+  const handleContinueToConfirm = () => {
+    const parsed = parsePaperText(rawPaperText, rawAnswerKeyText);
+    setQuestions(parsed.questions);
+    setUnparsedLines(parsed.unparsedLines);
+    setUnsupportedFeatures(parsed.unsupportedFeaturesDetected);
+    setParseWarnings(parsed.parseWarnings);
+    setHistory([]);
+    setStep(2);
+  };
+
+  // Optional AI Structuring
+  const handleAIStructureAssist = async () => {
+    if (!rawPaperText.trim()) return;
+    setIsAIStructuring(true);
+    try {
+      const res = await fetch("/api/parse-assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawText: rawPaperText }),
+      });
+      const data = await res.json();
+      if (data.success && data.questions) {
+        setQuestions(data.questions);
+        setStep(2);
+      } else {
+        alert(data.error || "AI structuring did not return structured questions.");
+      }
+    } catch {
+      alert("Error contacting AI structuring assistant.");
+    } finally {
+      setIsAIStructuring(false);
+    }
+  };
+
+  // Core Check Execution: Deterministic + BharatCode AI (if configured)
+  const runAllChecks = async (questionsToTest: Question[]) => {
+    // 1. Deterministic Checks
+    const deterministicReport = runDeterministicChecks(
+      questionsToTest,
+      metadata,
+      unsupportedFeatures
+    );
+
+    // If AI is not configured, we're done
+    if (!aiConfigured) {
+      deterministicReport.checksNotPerformed.push(
+        "BharatCode AI review: not performed (API key not configured)"
+      );
+      setCheckReport(deterministicReport);
+      setAiErrorMessage(undefined);
+      return;
+    }
+
+    // 2. BharatCode AI Review
+    setAiLoading(true);
+    setAiErrorMessage(undefined);
+
+    try {
+      const res = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questions: questionsToTest,
+          metadata,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success && Array.isArray(data.findings)) {
+        // Merge findings
+        const combinedFindings: Finding[] = [
+          ...deterministicReport.findings,
+          ...data.findings,
+        ];
+
+        setCheckReport({
+          ...deterministicReport,
+          findings: combinedFindings,
+          checksPerformed: [
+            ...deterministicReport.checksPerformed,
+            `BharatCode AI mathematical correctness & single-answer MCQ review (${data.modelUsed || "qwen-3.8-27b"})`,
+          ],
+          lastCheckedAt: new Date().toISOString(),
+          isStale: false,
+        });
+      } else {
+        setAiErrorMessage(data.error || "AI review returned an error.");
+        deterministicReport.checksNotPerformed.push(
+          `BharatCode AI review: failed (${data.error || "API error"})`
+        );
+        setCheckReport(deterministicReport);
+      }
+    } catch (err: unknown) {
+      setAiErrorMessage(`Network error contacting BharatCode review: ${(err as Error)?.message}`);
+      deterministicReport.checksNotPerformed.push(
+        "BharatCode AI review: network error"
+      );
+      setCheckReport(deterministicReport);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Step 2 -> Step 3
+  const handleProceedToReview = async () => {
+    setStep(3);
+    await runAllChecks(questions);
+  };
+
+  // Question editing handler with history tracking & stale marking
+  const handleQuestionsChange = (
+    updatedQuestions: Question[],
+    markStale: boolean = false
+  ) => {
+    setHistory((prev) => [...prev, questions]);
+    setQuestions(updatedQuestions);
+    if (markStale) {
+      setCheckReport((prev) => ({ ...prev, isStale: true }));
+    }
+  };
+
+  // Undo teacher action
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    const previous = history[history.length - 1];
+    setHistory((prev) => prev.slice(0, -1));
+    setQuestions(previous);
+    setCheckReport((prev) => ({ ...prev, isStale: true }));
+  };
+
+  // Apply Proposed Correction
+  const handleApplyCorrection = (
+    findingId: string,
+    correction: ProposedCorrection
+  ) => {
+    const finding = checkReport.findings.find((f) => f.id === findingId);
+    if (!finding || !finding.questionId) return;
+
+    const qIndex = questions.findIndex((q) => q.id === finding.questionId);
+    if (qIndex === -1) return;
+
+    // Push current to history
+    setHistory((prev) => [...prev, questions]);
+
+    const updated = [...questions];
+    const targetQ = { ...updated[qIndex] };
+
+    if (correction.field === "text") {
+      targetQ.text = String(correction.newValue);
+    } else if (correction.field === "optionText" && correction.targetOptionLabel) {
+      const optIdx = targetQ.options.findIndex(
+        (o) => o.label.toUpperCase() === correction.targetOptionLabel!.toUpperCase()
+      );
+      if (optIdx !== -1) {
+        const updatedOptions = [...targetQ.options];
+        updatedOptions[optIdx] = {
+          ...updatedOptions[optIdx],
+          text: String(correction.newValue),
+        };
+        targetQ.options = updatedOptions;
+      }
+    } else if (correction.field === "answerKey") {
+      targetQ.answerKey = String(correction.newValue);
+    } else if (correction.field === "marks") {
+      targetQ.marks = Number(correction.newValue);
+    }
+
+    updated[qIndex] = targetQ;
+    setQuestions(updated);
+
+    // Crucial requirement: mark findings STALE! Never mark resolved solely because correction was clicked.
+    setCheckReport((prev) => ({ ...prev, isStale: true }));
+  };
+
+  // Dismiss finding with optional note
+  const handleDismissFinding = (findingId: string, note?: string) => {
+    setCheckReport((prev) => ({
+      ...prev,
+      findings: prev.findings.map((f) =>
+        f.id === findingId ? { ...f, dismissed: true, dismissedNote: note } : f
+      ),
+    }));
+  };
+
+  // Restore dismissed finding
+  const handleRestoreFinding = (findingId: string) => {
+    setCheckReport((prev) => ({
+      ...prev,
+      findings: prev.findings.map((f) =>
+        f.id === findingId ? { ...f, dismissed: false, dismissedNote: undefined } : f
+      ),
+    }));
+  };
+
+  // Recheck paper
+  const handleRecheck = async () => {
+    await runAllChecks(questions);
+  };
+
+  // Restore draft from JSON file
+  const handleRestoreDraft = (draft: PaperDraft) => {
+    setMetadata(draft.metadata);
+    setQuestions(draft.questions);
+    setRawPaperText(draft.rawPaperText || "");
+    setRawAnswerKeyText(draft.rawAnswerKeyText || "");
+    setStep(2);
+  };
+
+  const canNavigateToStep = (targetStep: number): boolean => {
+    if (targetStep === 1) return true;
+    if (targetStep === 2) return questions.length > 0 || rawPaperText.trim().length > 0;
+    if (targetStep === 3) return questions.length > 0;
+    if (targetStep === 4) return questions.length > 0;
+    return false;
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-warm-50 text-navy-950 font-sans selection:bg-teal-100 selection:text-teal-900">
+      {/* Top Brand Header */}
+      <Header aiConfigured={aiConfigured} modelName={modelName} />
+
+      {/* Progress Workflow Indicator */}
+      <StepIndicator
+        currentStep={step}
+        onStepClick={(s) => setStep(s)}
+        canNavigateToStep={canNavigateToStep}
+      />
+
+      {/* Main Content View per Step */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {step === 1 && (
+          <Step1AddPaper
+            metadata={metadata}
+            rawPaperText={rawPaperText}
+            rawAnswerKeyText={rawAnswerKeyText}
+            aiConfigured={aiConfigured}
+            onMetadataChange={setMetadata}
+            onPaperTextChange={setRawPaperText}
+            onAnswerKeyTextChange={setRawAnswerKeyText}
+            onContinue={handleContinueToConfirm}
+            onLoadSample={handleLoadSample}
+            onAIStructureAssist={handleAIStructureAssist}
+            isAIStructuring={isAIStructuring}
+          />
+        )}
+
+        {step === 2 && (
+          <Step2ConfirmQuestions
+            questions={questions}
+            metadata={metadata}
+            unparsedLines={unparsedLines}
+            unsupportedFeatures={unsupportedFeatures}
+            parseWarnings={parseWarnings}
+            onQuestionsChange={(qs) => setQuestions(qs)}
+            onProceedToReview={handleProceedToReview}
+            onBackToAddPaper={() => setStep(1)}
+          />
+        )}
+
+        {step === 3 && (
+          <Step3ReviewFindings
+            questions={questions}
+            metadata={metadata}
+            checkReport={checkReport}
+            aiConfigured={aiConfigured}
+            aiLoading={aiLoading}
+            aiErrorMessage={aiErrorMessage}
+            hasUndo={history.length > 0}
+            onUndo={handleUndo}
+            onQuestionsChange={handleQuestionsChange}
+            onApplyCorrection={handleApplyCorrection}
+            onDismissFinding={handleDismissFinding}
+            onRestoreFinding={handleRestoreFinding}
+            onRecheck={handleRecheck}
+            onProceedToExport={() => setStep(4)}
+            onBackToConfirm={() => setStep(2)}
+          />
+        )}
+
+        {step === 4 && (
+          <Step4Export
+            questions={questions}
+            metadata={metadata}
+            checkReport={checkReport}
+            rawPaperText={rawPaperText}
+            rawAnswerKeyText={rawAnswerKeyText}
+            onBackToReview={() => setStep(3)}
+            onRestoreDraft={handleRestoreDraft}
+          />
+        )}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="no-print mt-auto py-6 border-t border-warm-200 text-center text-xs text-navy-500 bg-white">
+        <p>
+          <strong>Prayaas PaperCheck</strong> &mdash; Built for the BharatCode Build League. Catch question-paper mistakes before students encounter them.
+        </p>
+        <p className="mt-1 text-[11px] text-navy-400">
+          Compulsory English-language Mathematics assessments (Classes 6–8) &bull; In-memory draft security
+        </p>
       </footer>
     </div>
   );
