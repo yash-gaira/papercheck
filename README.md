@@ -9,7 +9,7 @@ Prayaas PaperCheck is an assessment quality assurance application designed for s
 
 ## 1. Product Scope & MVP Constraints
 
-- **Subject:** English-language Mathematics (Classes 6–8, CBSE / State Board aligned).
+- **Subject:** English-language Mathematics & Science (Classes 6–12, CBSE / State Board aligned).
 - **Scale:** Papers up to 20 questions.
 - **Question Types:** Single-answer Multiple Choice Questions (MCQs) and Short-Answer Questions.
 - **Marking Scheme:** Compulsory positive integer marks per question.

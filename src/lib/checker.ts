@@ -53,7 +53,7 @@ export function runDeterministicChecks(
         title: "Unsupported Paper Feature Detected",
         relevantText: feat,
         explanation:
-          "This release supports single-answer compulsory Mathematics papers (Classes 6-8) with up to 20 questions and positive integer marks. Complex internal choices or unsupported formats cannot be verified accurately.",
+          "This release supports single-answer compulsory papers (Classes 6–12 Mathematics and Science) with up to 20 questions and positive integer marks. Complex internal choices or unsupported formats cannot be verified accurately.",
         needsTeacherReview: false,
       });
     }

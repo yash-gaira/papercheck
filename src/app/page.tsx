@@ -332,7 +332,7 @@ export default function Home() {
               Catch question-paper mistakes before students do.
             </h1>
             <p className="font-sans text-xs sm:text-sm text-ink-secondary max-w-xl leading-relaxed">
-              Verify marks arithmetic, duplicate wording, single-answer MCQ integrity, and mathematical ambiguity across Class 6–8 mathematics papers.
+              Verify marks arithmetic, duplicate wording, single-answer MCQ integrity, scientific units, and question ambiguity across Classes 6–12 Mathematics &amp; Science papers.
             </p>
           </div>
 

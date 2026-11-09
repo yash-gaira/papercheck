@@ -182,7 +182,7 @@ You must reply ONLY with a valid JSON object matching this structure:
     }
   ]
 }`
-    : `You are an expert school mathematics question paper auditor for Classes 6-8 in India (CBSE/State Boards).
+    : `You are an expert school mathematics question paper auditor for ${subjectLabel} in India (CBSE/State Boards).
 Analyze the provided questions for:
 1. Mathematical errors or calculation mistakes in questions or answer keys.
 2. Single-answer MCQs with multiple correct options (e.g. if two options are both prime numbers, or two are equivalent fractions) or no correct options.
