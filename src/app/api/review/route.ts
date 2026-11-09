@@ -3,6 +3,8 @@ import { z } from "zod";
 import { QuestionSchema, PaperMetadataSchema } from "@/types/paper";
 import { performBharatCodeReview } from "@/lib/bharatcode";
 
+export const dynamic = "force-dynamic";
+
 const ReviewRequestSchema = z.object({
   questions: z.array(QuestionSchema).max(20),
   metadata: PaperMetadataSchema,

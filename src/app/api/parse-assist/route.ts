@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Question } from "@/types/paper";
 
+export const dynamic = "force-dynamic";
+
 const StructuringRequestSchema = z.object({
   rawText: z.string().min(1).max(10000),
 });
