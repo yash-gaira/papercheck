@@ -9,39 +9,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          50: "#f0f4f8",
-          100: "#d9e2ec",
-          200: "#bcccdc",
-          300: "#9fb3c8",
-          400: "#829ab1",
-          500: "#627d98",
-          600: "#486581",
-          700: "#334e68",
-          800: "#1e293b",
-          900: "#0b192c",
-          950: "#060d17",
+        paper: {
+          bg: "#F6F3EC",
+          surface: "#FBFAF6",
+          ruled: "#EAE5D9",
         },
-        teal: {
-          50: "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
+        ink: {
+          DEFAULT: "#1A1A18",
+          secondary: "#5C5A54",
+          muted: "#8C897E",
+          rule: "#D9D4C7",
+          faint: "#EBE7DC",
         },
-        warm: {
-          50: "#fafaf9",
-          100: "#f5f5f4",
-          200: "#e7e5e4",
-          300: "#d6d3d1",
-          400: "#a8a29e",
-          500: "#78716c",
+        redpen: {
+          DEFAULT: "#C8372D",
+          dark: "#A62B22",
+          faint: "#FDF2F0",
+          border: "#F3C5C1",
         },
+        pencil: {
+          green: "#3F6B4E",
+          faint: "#F2F7F4",
+          border: "#C8DC CF",
+        },
+      },
+      fontFamily: {
+        serif: ["Newsreader", "Instrument Serif", "Georgia", "serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "JetBrains Mono", "monospace"],
+      },
+      boxShadow: {
+        sheet: "0 1px 3px rgba(26,26,24,0.06), 0 1px 2px rgba(26,26,24,0.04)",
+        "sheet-lifted": "0 10px 25px -5px rgba(26,26,24,0.08), 0 8px 10px -6px rgba(26,26,24,0.04)",
       },
     },
   },

@@ -18,6 +18,7 @@ import {
 import { parsePaperText } from "@/lib/parser";
 import { runDeterministicChecks } from "@/lib/checker";
 import { SamplePaper } from "@/lib/samples";
+import { InteractivePaperCanvas } from "@/components/InteractivePaperCanvas";
 
 export default function Home() {
   const [step, setStep] = useState<number>(1);
@@ -241,7 +242,6 @@ export default function Home() {
     const qIndex = questions.findIndex((q) => q.id === finding.questionId);
     if (qIndex === -1) return;
 
-    // Push current to history
     setHistory((prev) => [...prev, questions]);
 
     const updated = [...questions];
@@ -270,7 +270,7 @@ export default function Home() {
     updated[qIndex] = targetQ;
     setQuestions(updated);
 
-    // Crucial requirement: mark findings STALE! Never mark resolved solely because correction was clicked.
+    // Stale report update
     setCheckReport((prev) => ({ ...prev, isStale: true }));
   };
 
@@ -317,11 +317,35 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-warm-50 text-navy-950 font-sans selection:bg-teal-100 selection:text-teal-900">
-      {/* Top Brand Header */}
+    <div className="min-h-screen flex flex-col bg-paper-bg text-ink selection:bg-redpen-faint selection:text-redpen">
+      {/* Top Header */}
       <Header aiConfigured={aiConfigured} modelName={modelName} />
 
-      {/* Progress Workflow Indicator */}
+      {/* Hero Section with Editorial Typography & Tactile 3D Paper */}
+      <section className="no-print border-b border-ink-rule bg-paper-surface">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 sm:py-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <div className="md:col-span-8 space-y-3">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-ink-secondary block">
+              Pre-Print Assessment Audit &bull; CBSE / State Syllabus
+            </span>
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-ink leading-[1.12]">
+              Catch question-paper mistakes before students do.
+            </h1>
+            <p className="font-sans text-xs sm:text-sm text-ink-secondary max-w-xl leading-relaxed">
+              Verify marks arithmetic, duplicate wording, single-answer MCQ integrity, and mathematical ambiguity across Class 6–8 mathematics papers.
+            </p>
+          </div>
+
+          <div className="md:col-span-4 flex justify-center md:justify-end">
+            <InteractivePaperCanvas
+              step={step}
+              findingCount={checkReport.findings.filter((f) => !f.dismissed).length}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Progress Workflow Margin Index */}
       <StepIndicator
         currentStep={step}
         onStepClick={(s) => setStep(s)}
@@ -329,7 +353,7 @@ export default function Home() {
       />
 
       {/* Main Content View per Step */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-[1100px] w-full mx-auto px-4 sm:px-6 py-8">
         {step === 1 && (
           <Step1AddPaper
             metadata={metadata}
@@ -392,13 +416,10 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="no-print mt-auto py-6 border-t border-warm-200 text-center text-xs text-navy-500 bg-white">
+      {/* Quiet, Single-Line Editorial Footer */}
+      <footer className="no-print mt-auto py-5 border-t border-ink-rule text-center font-mono text-[11px] text-ink-secondary bg-paper-surface">
         <p>
-          <strong>Prayaas PaperCheck</strong> &mdash; Built for the BharatCode Build League. Catch question-paper mistakes before students encounter them.
-        </p>
-        <p className="mt-1 text-[11px] text-navy-400">
-          Compulsory English-language Mathematics assessments (Classes 6–8) &bull; In-memory draft security
+          Prayaas PaperCheck &bull; Built for BharatCode Build League &bull; Class 6–8 Mathematics compulsory papers &bull; In-memory draft security
         </p>
       </footer>
     </div>

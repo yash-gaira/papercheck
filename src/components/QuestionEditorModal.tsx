@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Question, QuestionOption } from "@/types/paper";
-import { Plus, Trash2, X, Check } from "lucide-react";
 
 interface QuestionEditorModalProps {
   question: Question | null;
@@ -106,33 +105,35 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-warm-200 text-navy-900 my-8">
-        <div className="flex justify-between items-center pb-4 border-b border-warm-200">
+    <div className="fixed inset-0 z-50 bg-ink/40 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-[1px]">
+      <div className="bg-paper-surface rounded-[3px] max-w-2xl w-full p-6 sm:p-8 shadow-sheet-lifted border border-ink-rule text-ink my-8">
+        <div className="flex justify-between items-baseline pb-3 border-b border-ink-rule">
           <div>
-            <h3 className="text-lg font-bold text-navy-900">
+            <span className="font-mono text-[10px] tracking-wider uppercase text-ink-secondary block">
+              Question Editor &bull; ID: {question.id}
+            </span>
+            <h3 className="font-serif text-xl font-semibold text-ink">
               Edit Question {question.number}
             </h3>
-            <p className="text-xs text-navy-500">Internal ID: {question.id}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-navy-400 hover:text-navy-700 hover:bg-warm-100 transition"
+            className="font-mono text-xs text-ink-secondary hover:text-ink px-2 py-0.5 border border-ink-rule rounded-[2px]"
           >
-            <X className="w-5 h-5" />
+            Cancel [esc]
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs font-medium">
+          <div className="mt-4 p-3 bg-redpen-faint border border-redpen-border text-redpen rounded-[2px] font-mono text-xs">
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-navy-700 mb-1">
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1">
                 Display Number
               </label>
               <input
@@ -141,34 +142,34 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                 max="50"
                 value={number}
                 onChange={(e) => setNumber(parseInt(e.target.value, 10) || 1)}
-                className="w-full px-3 py-2 border border-warm-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none"
+                className="w-full pb-1 bg-transparent border-b border-ink-rule font-mono text-sm text-ink focus-pen"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-navy-700 mb-1">
-                Marks (Positive Integer)
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1">
+                Marks (Positive Int)
               </label>
               <input
                 type="number"
                 min="1"
                 max="20"
-                placeholder="e.g. 3"
+                placeholder="3"
                 value={marks}
                 onChange={(e) => setMarks(e.target.value)}
-                className="w-full px-3 py-2 border border-warm-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none"
+                className="w-full pb-1 bg-transparent border-b border-ink-rule font-mono text-sm text-ink focus-pen"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-navy-700 mb-1">
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1">
                 Question Type
               </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as "mcq" | "short_answer")}
-                className="w-full px-3 py-2 border border-warm-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white"
+                className="w-full py-1 bg-paper-bg border border-ink-rule font-mono text-xs text-ink rounded-[2px] focus:outline-none"
               >
                 <option value="mcq">Multiple Choice (MCQ)</option>
                 <option value="short_answer">Short Answer</option>
@@ -177,32 +178,31 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-navy-700 mb-1">
-              Question Text
+            <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1">
+              Question Statement
             </label>
             <textarea
               rows={3}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="w-full px-3 py-2 border border-warm-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none font-sans"
-              placeholder="Enter the mathematical problem statement..."
+              className="w-full p-3 bg-paper-bg border border-ink-rule font-serif text-base text-ink focus:bg-paper-surface focus-pen rounded-[2px]"
+              placeholder="Enter question statement..."
               required
             />
           </div>
 
           {type === "mcq" && (
-            <div className="bg-warm-50 p-4 rounded-lg border border-warm-200 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-navy-800">
-                  MCQ Options ({options.length})
+            <div className="bg-paper-bg p-4 border border-ink-rule rounded-[2px] space-y-2.5 font-mono text-xs">
+              <div className="flex justify-between items-baseline">
+                <span className="font-bold text-[10px] uppercase tracking-wider text-ink">
+                  MCQ Choices ({options.length})
                 </span>
                 <button
                   type="button"
                   onClick={handleAddOption}
-                  className="text-xs font-semibold text-teal-700 hover:text-teal-800 flex items-center space-x-1"
+                  className="text-ink hover:underline text-[11px]"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Option</span>
+                  + Add Choice
                 </button>
               </div>
 
@@ -212,23 +212,22 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
                     type="text"
                     value={opt.label}
                     onChange={(e) => handleOptionLabelChange(idx, e.target.value)}
-                    className="w-12 text-center font-bold px-2 py-1.5 border border-warm-300 rounded-md text-sm uppercase bg-white"
+                    className="w-10 text-center font-bold py-1 border border-ink-rule bg-paper-surface rounded-[2px] uppercase text-xs"
                     maxLength={3}
                   />
                   <input
                     type="text"
                     value={opt.text}
                     onChange={(e) => handleOptionChange(idx, e.target.value)}
-                    placeholder={`Option ${opt.label} content`}
-                    className="flex-1 px-3 py-1.5 border border-warm-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-teal-600 focus:outline-none"
+                    placeholder={`Option ${opt.label} text`}
+                    className="flex-1 px-2.5 py-1 border border-ink-rule bg-paper-surface rounded-[2px] text-xs focus-pen"
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveOption(idx)}
-                    className="p-1.5 text-navy-400 hover:text-red-600 transition"
-                    title="Remove option"
+                    className="text-ink-muted hover:text-redpen text-[11px] px-1"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    &times;
                   </button>
                 </div>
               ))}
@@ -236,35 +235,31 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-navy-700 mb-1">
+            <label className="block font-mono text-[10px] uppercase tracking-wider text-ink-secondary mb-1">
               Answer Key (Optional)
             </label>
             <input
               type="text"
               value={answerKey}
               onChange={(e) => setAnswerKey(e.target.value)}
-              placeholder={type === "mcq" ? "e.g. A" : "e.g. 26 cm or -11"}
-              className="w-full px-3 py-2 border border-warm-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-600 focus:outline-none"
+              placeholder={type === "mcq" ? "e.g. A" : "e.g. 26 cm"}
+              className="w-full pb-1 bg-transparent border-b border-ink-rule font-mono text-sm text-ink focus-pen"
             />
-            <p className="text-xs text-navy-500 mt-1">
-              For MCQs, specify the correct option letter (e.g. &apos;A&apos;). For short answers, specify the expected numerical or algebraic value.
-            </p>
           </div>
 
-          <div className="pt-4 border-t border-warm-200 flex justify-end space-x-3">
+          <div className="pt-4 border-t border-ink-rule flex justify-end space-x-2 font-mono text-xs">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-warm-300 text-navy-700 hover:bg-warm-100 rounded-lg text-sm font-medium transition"
+              className="px-4 py-2 border border-ink-rule text-ink-secondary hover:text-ink rounded-[2px]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold flex items-center space-x-1.5 shadow-sm transition"
+              className="px-5 py-2 bg-ink text-paper-surface hover:bg-black rounded-[2px] font-semibold"
             >
-              <Check className="w-4 h-4" />
-              <span>Save Question</span>
+              Save Question
             </button>
           </div>
         </form>
@@ -272,4 +267,3 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
     </div>
   );
 };
-

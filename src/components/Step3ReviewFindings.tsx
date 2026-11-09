@@ -8,23 +8,6 @@ import {
   CheckReport,
   ProposedCorrection,
 } from "@/types/paper";
-import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  RefreshCw,
-  Undo2,
-  Sparkles,
-  ShieldCheck,
-  Edit,
-  Check,
-  XCircle,
-  ArrowRight,
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
 import { QuestionEditorModal } from "./QuestionEditorModal";
 
 interface Step3ReviewFindingsProps {
@@ -74,7 +57,6 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
   const activeFindings = checkReport.findings.filter((f) => !f.dismissed);
   const dismissedFindings = checkReport.findings.filter((f) => f.dismissed);
 
-  // Filter logic
   const filteredFindings = activeFindings.filter((f) => {
     if (filterSeverity !== "all" && f.severity !== filterSeverity) return false;
     if (filterSource !== "all" && f.source !== filterSource) return false;
@@ -96,7 +78,7 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
 
   const handleSaveEditedQuestion = (updated: Question) => {
     const updatedList = questions.map((q) => (q.id === updated.id ? updated : q));
-    onQuestionsChange(updatedList, true); // marks stale!
+    onQuestionsChange(updatedList, true);
   };
 
   const handleApplyClick = (finding: Finding) => {
@@ -112,36 +94,35 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      {/* Top Banner / Summary Card */}
-      <div className="bg-white rounded-xl border border-warm-200 p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-warm-200">
+    <div className="space-y-6 step-fade-in">
+      {/* Paper Surface Review Panel */}
+      <div className="bg-paper-surface border border-ink-rule rounded-[3px] p-6 sm:p-8 shadow-sheet">
+        {/* Header Strip */}
+        <div className="flex flex-col md:flex-row md:items-baseline md:justify-between pb-5 border-b border-ink-rule gap-3">
           <div>
-            <div className="flex items-center space-x-2">
-              <h2 className="text-xl font-bold text-navy-900 tracking-tight">
-                3. Review Paper Findings
-              </h2>
+            <div className="flex items-baseline space-x-3">
+              <span className="font-mono text-[10px] tracking-widest uppercase text-ink-secondary">
+                Section 03 / Audit
+              </span>
               {checkReport.isStale && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
-                  Findings Stale (Edits Made)
+                <span className="font-mono text-[10px] uppercase font-bold text-redpen bg-redpen-faint px-2 py-0.5 border border-redpen-border rounded-[2px]">
+                  [Outdated &mdash; Edits Applied]
                 </span>
               )}
             </div>
-            <p className="text-xs text-navy-600 mt-1">
-              Examine rule-based and AI-assisted findings. You stay in control of all edits and decisions.
-            </p>
+            <h2 className="font-serif text-2xl text-ink font-semibold tracking-tight mt-0.5">
+              Teacher Review &amp; Annotations
+            </h2>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             {hasUndo && (
               <button
                 type="button"
                 onClick={onUndo}
-                className="text-xs bg-warm-100 hover:bg-warm-200 text-navy-800 border border-warm-300 font-semibold px-3 py-2 rounded-lg flex items-center space-x-1.5 transition"
-                title="Undo last question edit"
+                className="font-mono text-xs text-ink-secondary hover:text-ink px-3 py-1.5 border border-ink-rule rounded-[2px]"
               >
-                <Undo2 className="w-4 h-4" />
-                <span>Undo Edit</span>
+                &larr; Undo Edit
               </button>
             )}
 
@@ -149,168 +130,128 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
               type="button"
               onClick={onRecheck}
               disabled={aiLoading}
-              className={`text-xs font-semibold px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-sm transition ${
+              className={`font-mono text-xs font-semibold px-4 py-1.5 rounded-[2px] transition-colors ${
                 checkReport.isStale
-                  ? "bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-300"
-                  : "bg-navy-900 hover:bg-navy-800 text-white"
+                  ? "bg-redpen text-paper-surface hover:bg-redpen-dark"
+                  : "bg-paper-bg hover:bg-paper-surface text-ink border border-ink-rule"
               }`}
             >
-              <RefreshCw className={`w-4 h-4 ${aiLoading ? "animate-spin" : ""}`} />
-              <span>{aiLoading ? "Checking..." : "Recheck Paper"}</span>
+              {aiLoading ? "Re-checking..." : "Recheck Paper"}
             </button>
 
             <button
               type="button"
               onClick={onProceedToExport}
-              className="text-xs bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center space-x-1.5 shadow-sm transition"
+              className="font-mono text-xs font-semibold px-4 py-1.5 bg-ink text-paper-surface hover:bg-black rounded-[2px] transition-colors focus:ring-2 focus:ring-redpen"
             >
-              <span>Export Paper</span>
-              <ArrowRight className="w-4 h-4" />
+              Proceed to Export &rarr;
             </button>
           </div>
         </div>
 
-        {/* Stale Alert Banner */}
+        {/* Stale Findings Alert */}
         {checkReport.isStale && (
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg text-xs flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-              <div>
-                <p className="font-bold">Findings are outdated</p>
-                <p className="text-amber-800">
-                  You modified question content or applied a proposed correction. Click &ldquo;Recheck Paper&rdquo; to re-verify the revised paper.
-                </p>
-              </div>
+          <div className="mt-4 p-3.5 border-l-2 border-redpen bg-redpen-faint text-redpen text-xs font-mono rounded-[2px] flex items-center justify-between">
+            <div>
+              <span className="font-bold block">[Paper text modified]</span>
+              <span>Previous review findings may be outdated. Recheck paper to verify corrections.</span>
             </div>
             <button
               onClick={onRecheck}
               disabled={aiLoading}
-              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold text-xs transition"
+              className="px-3 py-1 bg-redpen text-paper-surface rounded-[2px] font-semibold text-xs ml-4 flex-shrink-0"
             >
               Recheck Now
             </button>
           </div>
         )}
 
-        {/* Metrics Grid */}
-        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-warm-50 p-3 rounded-lg border border-warm-200">
-            <span className="text-[11px] font-semibold text-navy-500 uppercase block">
-              Marks Arithmetic
-            </span>
-            <div className="mt-1 flex items-baseline space-x-1">
-              <span
-                className={`text-lg font-bold ${
-                  checkReport.isMarksSumReliable &&
-                  checkReport.marksSum === metadata.expectedTotalMarks
-                    ? "text-teal-700"
-                    : "text-red-600"
-                }`}
-              >
-                {checkReport.isMarksSumReliable ? checkReport.marksSum : "Unreliable"}
-              </span>
-              <span className="text-xs text-navy-500">
-                / {metadata.expectedTotalMarks} expected
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-red-50/50 p-3 rounded-lg border border-red-200">
-            <span className="text-[11px] font-semibold text-red-600 uppercase block">
-              Errors
-            </span>
-            <span className="text-lg font-bold text-red-700 mt-1 block">
-              {errorCount}
+        {/* Paper Marks & Audit Ledger */}
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 px-4 bg-paper-bg border border-ink-rule/80 rounded-[2px] font-mono text-xs">
+          <div>
+            <span className="text-[10px] uppercase text-ink-muted block">Marks Sum Ledger</span>
+            <span
+              className={`text-base font-bold ${
+                checkReport.isMarksSumReliable &&
+                checkReport.marksSum === metadata.expectedTotalMarks
+                  ? "text-pencil-green"
+                  : "text-redpen"
+              }`}
+            >
+              {checkReport.isMarksSumReliable ? `${checkReport.marksSum}` : "Unreliable"}{" "}
+              <span className="text-xs text-ink-muted font-normal">/ {metadata.expectedTotalMarks}</span>
             </span>
           </div>
 
-          <div className="bg-amber-50/50 p-3 rounded-lg border border-amber-200">
-            <span className="text-[11px] font-semibold text-amber-600 uppercase block">
-              Warnings
-            </span>
-            <span className="text-lg font-bold text-amber-700 mt-1 block">
-              {warningCount}
-            </span>
+          <div>
+            <span className="text-[10px] uppercase text-redpen block">Red Pen Errors</span>
+            <span className="text-base font-bold text-redpen">{errorCount}</span>
           </div>
 
-          <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-200">
-            <span className="text-[11px] font-semibold text-blue-600 uppercase block">
-              Notes
-            </span>
-            <span className="text-lg font-bold text-blue-700 mt-1 block">
-              {noteCount}
-            </span>
+          <div>
+            <span className="text-[10px] uppercase text-ink-secondary block">Warnings</span>
+            <span className="text-base font-bold text-ink">{warningCount}</span>
+          </div>
+
+          <div>
+            <span className="text-[10px] uppercase text-ink-muted block">Auditor Notes</span>
+            <span className="text-base font-bold text-ink-muted">{noteCount}</span>
           </div>
         </div>
 
-        {/* AI Review Status Notice */}
+        {/* Keyless Mode / Status Note */}
         {!aiConfigured ? (
-          <div className="mt-4 p-3 bg-navy-50 border border-navy-200 rounded-lg text-xs text-navy-800 flex items-start space-x-2">
-            <Info className="w-4 h-4 text-navy-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-navy-900">
-                AI review unavailable — BharatCode key not configured.
-              </p>
-              <p className="text-navy-600">
-                All deterministic rule-based checks (marks sum, duplicate questions, numbering continuity, MCQ option integrity) are fully operational. To enable mathematical ambiguity and answer checking, configure <code>BHARATCODE_API_KEY</code>.
-              </p>
-            </div>
+          <div className="mt-4 p-3 bg-paper-bg border border-ink-rule rounded-[2px] text-xs font-mono text-ink-secondary flex items-baseline space-x-2">
+            <span className="font-bold text-ink">&bull; Note:</span>
+            <span>
+              AI review unavailable &mdash; BharatCode key not configured. Deterministic rules (marks arithmetic, duplicate questions, numbering continuity, MCQ option integrity) are fully verified.
+            </span>
           </div>
         ) : aiErrorMessage ? (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-start space-x-2">
-            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-red-900">AI Review Notification</p>
-              <p>{aiErrorMessage}</p>
-            </div>
+          <div className="mt-4 p-3 bg-redpen-faint border border-redpen-border rounded-[2px] text-xs font-mono text-redpen">
+            <span className="font-bold block">[BharatCode Review Notice]</span>
+            <span>{aiErrorMessage}</span>
           </div>
         ) : null}
 
-        {/* Checks Performed / Not Performed Accordion */}
-        <div className="mt-4 border-t border-warm-200 pt-3">
+        {/* Checks Performed / Scope Toggle */}
+        <div className="mt-4 pt-3 border-t border-ink-rule/60 text-xs">
           <button
             type="button"
             onClick={() => setShowChecksList(!showChecksList)}
-            className="text-xs font-semibold text-navy-700 hover:text-navy-900 flex items-center space-x-1"
+            className="font-mono text-[11px] text-ink-secondary hover:text-ink underline"
           >
-            <span>Quality Audit Scope ({checkReport.checksPerformed.length} checks performed)</span>
-            {showChecksList ? (
-              <ChevronUp className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5" />
-            )}
+            {showChecksList
+              ? "[-] Hide verification checklist"
+              : `[+] View verification scope (${checkReport.checksPerformed.length} checks performed)`}
           </button>
 
           {showChecksList && (
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-warm-50 p-3.5 rounded-lg border border-warm-200">
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-paper-bg border border-ink-rule rounded-[2px] text-xs">
               <div>
-                <p className="font-bold text-teal-900 mb-1 flex items-center space-x-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Checks Performed</span>
-                </p>
-                <ul className="space-y-1 pl-4 list-disc text-navy-700">
+                <span className="font-mono text-[10px] font-bold uppercase text-pencil-green block mb-1.5">
+                  Verified Checks
+                </span>
+                <ul className="space-y-1 font-mono text-[11px] text-ink">
                   {checkReport.checksPerformed.map((c, i) => (
-                    <li key={i}>{c}</li>
+                    <li key={i}>&bull; {c}</li>
                   ))}
                   {aiConfigured && !aiErrorMessage && (
-                    <li>BharatCode mathematical correctness & MCQ ambiguity review</li>
+                    <li>&bull; BharatCode mathematical correctness &amp; ambiguity review</li>
                   )}
                 </ul>
               </div>
 
               <div>
-                <p className="font-bold text-navy-900 mb-1 flex items-center space-x-1">
-                  <Info className="w-3.5 h-3.5 text-navy-500" />
-                  <span>Checks Not Performed</span>
-                </p>
-                <ul className="space-y-1 pl-4 list-disc text-navy-600">
-                  {!aiConfigured && (
-                    <li>BharatCode AI review (API key not configured)</li>
-                  )}
+                <span className="font-mono text-[10px] font-bold uppercase text-ink-muted block mb-1.5">
+                  Checks Not Performed / Out of Scope
+                </span>
+                <ul className="space-y-1 font-mono text-[11px] text-ink-secondary">
+                  {!aiConfigured && <li>&bull; BharatCode AI review (API key not configured)</li>}
                   {checkReport.checksNotPerformed.map((c, i) => (
-                    <li key={i}>{c}</li>
+                    <li key={i}>&bull; {c}</li>
                   ))}
-                  <li>Diagram / geometry rendering validation (non-text MVP limitation)</li>
+                  <li>&bull; Diagram visual rendering (text-only MVP)</li>
                 </ul>
               </div>
             </div>
@@ -318,153 +259,141 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-warm-200 shadow-xs text-xs">
+      {/* Filter Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-paper-surface border border-ink-rule rounded-[2px] font-mono text-xs">
         <div className="flex items-center space-x-2">
-          <span className="font-semibold text-navy-700">Filter Severity:</span>
+          <span className="text-ink-secondary uppercase text-[10px]">Filter:</span>
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="px-2.5 py-1.5 border border-warm-300 rounded-md bg-white text-navy-800 focus:outline-none"
+            className="bg-paper-bg border border-ink-rule text-ink px-2 py-1 rounded-[2px] text-xs focus:outline-none"
           >
             <option value="all">All Severities ({activeFindings.length})</option>
-            <option value="error">Errors only ({errorCount})</option>
-            <option value="warning">Warnings only ({warningCount})</option>
-            <option value="note">Notes only ({noteCount})</option>
+            <option value="error">Errors ({errorCount})</option>
+            <option value="warning">Warnings ({warningCount})</option>
+            <option value="note">Notes ({noteCount})</option>
           </select>
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="font-semibold text-navy-700">Source:</span>
+          <span className="text-ink-secondary uppercase text-[10px]">Source:</span>
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value)}
-            className="px-2.5 py-1.5 border border-warm-300 rounded-md bg-white text-navy-800 focus:outline-none"
+            className="bg-paper-bg border border-ink-rule text-ink px-2 py-1 rounded-[2px] text-xs focus:outline-none"
           >
             <option value="all">All Sources</option>
-            <option value="rule">Rule checks only</option>
-            <option value="ai">AI review only</option>
+            <option value="rule">Rule Checks Only</option>
+            <option value="ai">AI Review Only</option>
           </select>
         </div>
       </div>
 
-      {/* Findings List */}
+      {/* Red Pen Annotations List */}
       {filteredFindings.length === 0 ? (
-        <div className="bg-white rounded-xl border border-warm-200 p-12 text-center shadow-xs">
-          <CheckCircle className="w-12 h-12 text-teal-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-navy-900">No Open Findings</h3>
-          <p className="text-xs text-navy-600 max-w-md mx-auto mt-1 mb-6">
+        <div className="bg-paper-surface border border-ink-rule p-10 text-center rounded-[2px]">
+          <div className="font-serif italic text-2xl text-pencil-green mb-1">✓</div>
+          <h3 className="font-serif text-lg text-ink font-semibold">No open findings</h3>
+          <p className="font-mono text-xs text-ink-muted mt-1 mb-4">
             {checkReport.findings.length > 0
-              ? "All findings match the current filter or have been dismissed by the teacher."
-              : "No issues detected! Your question paper passed all performed checks."}
+              ? "All findings match filters or were dismissed by the teacher."
+              : "Question paper passed all deterministic and AI checks."}
           </p>
           <button
             onClick={onProceedToExport}
-            className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"
+            className="px-5 py-2 bg-ink text-paper-surface hover:bg-black font-mono text-xs rounded-[2px]"
           >
-            Proceed to Export
+            Proceed to Export &rarr;
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredFindings.map((finding) => {
             const isApplied = appliedFindingIds.has(finding.id);
+            const isError = finding.severity === "error";
 
             return (
               <div
                 key={finding.id}
-                className={`bg-white rounded-xl border p-5 shadow-xs transition ${
-                  finding.severity === "error"
-                    ? "border-red-200 hover:border-red-300"
-                    : finding.severity === "warning"
-                    ? "border-amber-200 hover:border-amber-300"
-                    : "border-blue-200 hover:border-blue-300"
+                className={`bg-paper-surface border rounded-[2px] p-5 transition-colors stagger-item ${
+                  isError
+                    ? "border-redpen/60 border-l-4 border-l-redpen"
+                    : "border-ink-rule border-l-4 border-l-ink-muted"
                 }`}
               >
                 {/* Header row */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-warm-200">
-                  <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 pb-2.5 border-b border-ink-rule/60 font-mono text-xs">
+                  <div className="flex items-baseline space-x-2.5">
                     <span
-                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                        finding.severity === "error"
-                          ? "bg-red-100 text-red-800"
-                          : finding.severity === "warning"
-                          ? "bg-amber-100 text-amber-900"
-                          : "bg-blue-100 text-blue-800"
+                      className={`font-bold uppercase tracking-wider text-[11px] ${
+                        isError ? "text-redpen" : "text-ink-secondary"
                       }`}
                     >
-                      {finding.severity}
+                      [{finding.severity}]
                     </span>
 
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-warm-100 text-navy-800">
+                    <span className="font-semibold text-ink">
                       {finding.questionNumber !== null && finding.questionNumber !== undefined
                         ? `Question ${finding.questionNumber}`
                         : "Whole Paper"}
                     </span>
 
-                    {finding.source === "ai" ? (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200 flex items-center space-x-1">
-                        <Sparkles className="w-3 h-3 text-teal-600" />
-                        <span>AI Review</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-navy-50 text-navy-700 border border-navy-200 flex items-center space-x-1">
-                        <ShieldCheck className="w-3 h-3 text-navy-600" />
-                        <span>Rule Check</span>
-                      </span>
-                    )}
+                    <span className="text-[10px] text-ink-muted border border-ink-rule px-1.5 py-0.2 rounded-[2px]">
+                      {finding.source === "ai" ? "BharatCode AI" : "Rule Check"}
+                    </span>
 
                     {finding.needsTeacherReview && (
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-300">
+                      <span className="text-[10px] text-redpen font-semibold underline">
                         Needs teacher review
                       </span>
                     )}
                   </div>
 
                   {checkReport.isStale && (
-                    <span className="text-[11px] text-amber-700 font-semibold italic">
-                      May be outdated (Recheck advised)
+                    <span className="text-[10px] text-redpen italic">
+                      [May be outdated &mdash; recheck advised]
                     </span>
                   )}
                 </div>
 
                 {/* Finding Details */}
                 <div className="mt-3 space-y-2">
-                  <h4 className="text-sm font-bold text-navy-900">
+                  <h4 className="font-serif text-base text-ink font-semibold">
                     {finding.title}
                   </h4>
 
                   {finding.relevantText && (
-                    <div className="bg-warm-50 p-2.5 rounded border border-warm-200 font-mono text-xs text-navy-800">
-                      <span className="text-navy-500 font-sans block text-[11px] mb-0.5">
-                        Relevant text / calculation:
+                    <div className="p-2.5 bg-paper-bg border border-ink-faint font-mono text-xs text-ink">
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-ink-muted block mb-0.5">
+                        Relevant citation:
                       </span>
                       {finding.relevantText}
                     </div>
                   )}
 
-                  <p className="text-xs text-navy-700 leading-relaxed">
+                  <p className="text-xs text-ink-secondary leading-relaxed font-sans">
                     {finding.explanation}
                   </p>
 
-                  {/* Proposed Correction */}
+                  {/* Proposed Correction Red-Pen Box */}
                   {finding.proposedCorrection && (
-                    <div className="mt-3 p-3 bg-teal-50/70 border border-teal-200 rounded-lg text-xs space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-teal-900">
-                          Proposed Correction:
+                    <div className="mt-3 p-3 bg-redpen-faint/60 border border-redpen-border rounded-[2px] text-xs font-mono space-y-1.5">
+                      <div className="flex justify-between items-baseline">
+                        <span className="font-bold text-redpen uppercase text-[10px] tracking-wider">
+                          Red Pen Proposed Correction:
                         </span>
                         {isApplied && (
-                          <span className="text-[11px] font-bold text-teal-700 flex items-center space-x-1">
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Applied (Recheck to verify)</span>
+                          <span className="text-[10px] font-bold text-pencil-green">
+                            [Applied &mdash; Recheck needed]
                           </span>
                         )}
                       </div>
-                      <p className="text-teal-950 font-medium">
+
+                      <p className="text-ink font-semibold text-[11px]">
                         {finding.proposedCorrection.label}
                       </p>
-                      <div className="bg-white p-2 rounded border border-teal-200 font-mono text-xs text-teal-950">
+
+                      <div className="p-1.5 bg-paper-surface border border-redpen-border/60 text-ink text-xs">
                         {String(finding.proposedCorrection.newValue)}
                       </div>
 
@@ -472,10 +401,9 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
                         <button
                           type="button"
                           onClick={() => handleApplyClick(finding)}
-                          className="mt-2 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded font-semibold text-xs transition flex items-center space-x-1"
+                          className="mt-1 px-3 py-1 bg-redpen hover:bg-redpen-dark text-paper-surface rounded-[2px] font-semibold text-[11px] transition-colors"
                         >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Apply Proposed Correction</span>
+                          Apply Correction to Paper
                         </button>
                       )}
                     </div>
@@ -483,16 +411,15 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
                 </div>
 
                 {/* Teacher Action Controls */}
-                <div className="mt-4 pt-3 border-t border-warm-200 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center space-x-2">
+                <div className="mt-4 pt-3 border-t border-ink-rule/50 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                  <div className="flex items-center space-x-3">
                     {finding.questionId && (
                       <button
                         type="button"
                         onClick={() => handleEditQuestion(finding.questionId)}
-                        className="text-xs font-semibold px-3 py-1.5 border border-warm-300 hover:bg-warm-100 text-navy-800 rounded-md transition flex items-center space-x-1"
+                        className="text-ink-secondary hover:text-ink underline"
                       >
-                        <Edit className="w-3.5 h-3.5 text-navy-600" />
-                        <span>Edit Question</span>
+                        [Edit Question]
                       </button>
                     )}
 
@@ -503,43 +430,42 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
                           dismissingFindingId === finding.id ? null : finding.id
                         )
                       }
-                      className="text-xs font-semibold px-3 py-1.5 border border-warm-300 hover:bg-warm-100 text-navy-600 rounded-md transition flex items-center space-x-1"
+                      className="text-ink-muted hover:text-ink underline"
                     >
-                      <XCircle className="w-3.5 h-3.5 text-navy-500" />
-                      <span>Dismiss with note</span>
+                      [Dismiss with note]
                     </button>
                   </div>
 
-                  <span className="text-[11px] text-navy-400">
-                    Finding ID: {finding.id}
+                  <span className="text-[10px] text-ink-muted">
+                    ID: {finding.id}
                   </span>
                 </div>
 
-                {/* Dismiss Dialog Box */}
+                {/* Dismiss Dialog Input */}
                 {dismissingFindingId === finding.id && (
-                  <div className="mt-3 p-3 bg-warm-50 border border-warm-300 rounded-lg text-xs space-y-2">
-                    <label className="font-semibold text-navy-900 block">
-                      Teacher Rationale for Dismissal (Optional)
+                  <div className="mt-3 p-3 bg-paper-bg border border-ink-rule rounded-[2px] text-xs space-y-2">
+                    <label className="font-mono text-[10px] uppercase font-bold text-ink block">
+                      Teacher Rationale for Dismissal:
                     </label>
                     <input
                       type="text"
                       value={dismissNote}
                       onChange={(e) => setDismissNote(e.target.value)}
-                      placeholder="e.g. Teacher verified phrasing matches textbook syllabus"
-                      className="w-full px-3 py-1.5 border border-warm-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-teal-600"
+                      placeholder="e.g. Verified wording matches curriculum textbook"
+                      className="w-full px-2.5 py-1.5 border border-ink-rule bg-paper-surface rounded-[2px] text-xs focus-pen"
                     />
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end space-x-2 font-mono text-[11px]">
                       <button
                         type="button"
                         onClick={() => setDismissingFindingId(null)}
-                        className="px-3 py-1 border border-warm-300 text-navy-700 rounded text-xs hover:bg-warm-100"
+                        className="px-2 py-1 text-ink-secondary"
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
                         onClick={() => handleConfirmDismiss(finding.id)}
-                        className="px-3 py-1 bg-navy-900 text-white rounded text-xs font-semibold hover:bg-navy-800"
+                        className="px-3 py-1 bg-ink text-paper-surface rounded-[2px] font-semibold"
                       >
                         Confirm Dismissal
                       </button>
@@ -554,42 +480,32 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
 
       {/* Dismissed Findings Accordion */}
       {dismissedFindings.length > 0 && (
-        <div className="bg-white rounded-xl border border-warm-200 p-5 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-warm-200">
-            <h3 className="text-sm font-bold text-navy-900">
+        <div className="bg-paper-surface border border-ink-rule rounded-[2px] p-5 text-xs">
+          <div className="flex justify-between items-baseline pb-2 border-b border-ink-rule font-mono">
+            <span className="font-bold text-ink uppercase tracking-wider text-[11px]">
               Dismissed by Teacher ({dismissedFindings.length})
-            </h3>
-            <span className="text-xs text-navy-500">
-              Preserved for review audit report
             </span>
+            <span className="text-ink-muted text-[10px]">Archived for audit report</span>
           </div>
 
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-2">
             {dismissedFindings.map((df) => (
               <div
                 key={df.id}
-                className="p-3 bg-warm-50 rounded-lg border border-warm-200 text-xs flex items-start justify-between gap-3 opacity-80 hover:opacity-100 transition"
+                className="p-2.5 bg-paper-bg border border-ink-faint rounded-[2px] flex items-baseline justify-between gap-3 text-ink-secondary font-mono text-[11px]"
               >
                 <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-navy-900">{df.title}</span>
-                    <span className="px-2 py-0.5 rounded bg-warm-200 text-navy-700 font-semibold">
-                      {df.questionNumber ? `Q${df.questionNumber}` : "Paper"}
-                    </span>
-                  </div>
+                  <span className="font-bold text-ink">{df.title}</span>
                   {df.dismissedNote && (
-                    <p className="mt-1 text-teal-900 italic font-medium">
-                      Teacher Note: &ldquo;{df.dismissedNote}&rdquo;
-                    </p>
+                    <span className="italic ml-2">&ldquo;{df.dismissedNote}&rdquo;</span>
                   )}
                 </div>
-
                 <button
                   type="button"
                   onClick={() => onRestoreFinding(df.id)}
-                  className="px-2.5 py-1 text-xs border border-warm-300 text-navy-700 hover:bg-white rounded font-medium transition flex-shrink-0"
+                  className="text-ink underline hover:text-redpen"
                 >
-                  Restore Finding
+                  [Restore]
                 </button>
               </div>
             ))}
@@ -597,24 +513,22 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
         </div>
       )}
 
-      {/* Navigation Footer */}
-      <div className="flex justify-between items-center pt-4 border-t border-warm-200">
+      {/* Navigation Row */}
+      <div className="mt-8 pt-4 border-t border-ink-rule flex justify-between items-center">
         <button
           type="button"
           onClick={onBackToConfirm}
-          className="px-4 py-2 border border-warm-300 text-navy-700 hover:bg-warm-100 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition"
+          className="font-mono text-xs text-ink-secondary hover:text-ink"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Confirm Questions</span>
+          &larr; Back to Confirm Questions
         </button>
 
         <button
           type="button"
           onClick={onProceedToExport}
-          className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold flex items-center space-x-2 shadow-sm transition"
+          className="px-6 py-2.5 bg-ink hover:bg-black text-paper-surface font-mono text-xs font-semibold rounded-[2px] transition-colors focus:ring-2 focus:ring-redpen"
         >
-          <span>Proceed to Export</span>
-          <ArrowRight className="w-4 h-4" />
+          Proceed to Export &rarr;
         </button>
       </div>
 
@@ -631,4 +545,3 @@ export const Step3ReviewFindings: React.FC<Step3ReviewFindingsProps> = ({
     </div>
   );
 };
-
